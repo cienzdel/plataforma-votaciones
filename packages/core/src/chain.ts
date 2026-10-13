@@ -1,4 +1,4 @@
-import { hashJsonHex } from "./jcs.js";
+import { hashJsonHex } from "./jcs.ts";
 
 export const GENESIS_PREV = "0".repeat(64);
 

@@ -1,5 +1,5 @@
-import { check, type Tallies } from "../types.js";
-import { idList, nonNegativeInt, orderIndex, tallyOf } from "./common.js";
+import { check, type Tallies } from "../types.ts";
+import { idList, nonNegativeInt, orderIndex, tallyOf } from "./common.ts";
 
 export const STATUS_VALUES = ["marked", "blank", "abstain"] as const;
 export const MARK_VALUES = ["marked", "unmarked"] as const;

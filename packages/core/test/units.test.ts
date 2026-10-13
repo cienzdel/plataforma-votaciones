@@ -30,8 +30,8 @@ import {
   verifyChain,
   verifySignature,
   ProfileError,
-} from "../src/index.js";
-import { keyPair } from "./fixtures.js";
+} from "../src/index.ts";
+import { keyPair } from "./fixtures.ts";
 
 const counters = { session_members: 45, session_present: 30, members: 45, present: 30, proxies: 0, rights: 30 };
 const lv = { candidates: ["c1", "c2", "c3", "c4"], seats: 3, minimum: 0 };

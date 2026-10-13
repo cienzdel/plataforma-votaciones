@@ -1,4 +1,4 @@
-import { check, type Fraction } from "./types.js";
+import { check, type Fraction } from "./types.ts";
 
 /** `[p, q]` with integers `0 ≤ p ≤ q` and `q > 0` (spec/methods.md §1.1). */
 export function isFraction(value: unknown): value is Fraction {

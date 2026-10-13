@@ -1,5 +1,5 @@
-import { check, type Tallies } from "../types.js";
-import { idList, nonNegativeInt, tallyOf } from "./common.js";
+import { check, type Tallies } from "../types.ts";
+import { idList, nonNegativeInt, tallyOf } from "./common.ts";
 
 export type SingleWinnerResult = {
   cast: number;

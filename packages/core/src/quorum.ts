@@ -1,5 +1,5 @@
-import { ceilFrac } from "./fraction.js";
-import type { Counters, Fraction } from "./types.js";
+import { ceilFrac } from "./fraction.ts";
+import type { Counters, Fraction } from "./types.ts";
 
 export interface Threshold {
   required: number;

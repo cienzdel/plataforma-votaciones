@@ -1,5 +1,5 @@
-import { formatTimestamp, parseTimestamp } from "./time.js";
-import { check } from "./types.js";
+import { formatTimestamp, parseTimestamp } from "./time.ts";
+import { check } from "./types.ts";
 
 /** Wall-clock fields of the instant `ms` in `timeZone`. */
 function wallClock(ms: number, timeZone: string): number[] {

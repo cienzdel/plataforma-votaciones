@@ -9,8 +9,8 @@ import {
   verifyBoard,
   type BoardErrorCode,
   type BoardInput,
-} from "../src/index.js";
-import { credential, DRAND_ROUND, fixture, keyPair, publicKeyHex, rechain, type Fixture, type FixtureOptions } from "./fixtures.js";
+} from "../src/index.ts";
+import { credential, DRAND_ROUND, fixture, keyPair, publicKeyHex, rechain, type Fixture, type FixtureOptions } from "./fixtures.ts";
 
 const limitedVote: FixtureOptions = {
   method: "limited_vote",

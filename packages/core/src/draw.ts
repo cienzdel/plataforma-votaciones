@@ -1,5 +1,5 @@
-import { compareUtf8, concat, hash, tag, u64be } from "./bytes.js";
-import { check } from "./types.js";
+import { compareUtf8, concat, hash, tag, u64be } from "./bytes.ts";
+import { check } from "./types.ts";
 
 /** drand quicknet parameters (spec/draws.md §1). */
 export const QUICKNET = {

@@ -1,0 +1,20 @@
+{
+  "assent_excluded": ["regulations reform", "censure motion"],
+  "assent_min_days": 2,
+  "body": "Example body",
+  "degrees": [
+    { "id": "bio", "name": "Example degree A" },
+    { "id": "phys", "name": "Example degree B" }
+  ],
+  "id": "example",
+  "max_proxies": 2,
+  "presets": {},
+  "profile_version": "0.1.0",
+  "quorum": [[1, 3], [1, 4]],
+  "second_call_after_minutes": 15,
+  "status": "fictitious example for development and tests",
+  "texts": {},
+  "timezone": "Europe/Madrid",
+  "type": "profile",
+  "version": 1
+}

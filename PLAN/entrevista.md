@@ -251,3 +251,10 @@ Formato: `[Bloque N] Decisión — Justificación`. Las decisiones aplazadas se 
 
 - [H4] El verificador Python usa `cryptography` (RSA-PSS), `py_ecc` (BLS12-381, para la firma de drand) y `tzdata` (zonas horarias en Windows), con versiones exactas. — `cryptography` es la referencia en Python; `py_ecc` incluye hash-to-curve sobre G1 y la verificación se compone con sus operaciones de curva; `tzdata` hace que los plazos del asentimiento den lo mismo en todos los sistemas.
 - [H4] La verificación de un repositorio de datos sigue la estructura de `spec/formats.md` §9.1: `chain.json` en la raíz y, junto a cada tablón, su aviso de apertura, su tabla de candidaturas y su lista nominal. — Hacía falta fijarla para que la herramienta encuentre cada documento sin configuración.
+
+## Hito H5 (2026-10-13)
+
+- [H5] La API usa Hono, Drizzle con better-sqlite3 (trae binarios precompilados, sin scripts de instalación) y nodemailer para SMTP; Gmail API se llama con `fetch`, sin la librería de Google. — Lo mínimo para el plan; menos dependencias que auditar.
+- [H5] El código TypeScript se ejecuta directamente con Node (eliminación de tipos), sin paso de compilación; los imports llevan extensión `.ts`. — Un artefacto menos que construir y comprobar en la VM.
+- [H5] Interpretaciones de las delegaciones que conviene confirmar con la mesa: no se admiten cadenas (quien ha delegado no puede recibir delegaciones y quien tiene delegaciones no puede delegar); no puede delegar quien está presente; si quien delegó llega y vuelve a irse, puede registrar una delegación nueva. — El reglamento no trata estos casos y una cadena haría difícil saber quién vota por quién.
+- [H5] Solo puede haber una sesión abierta a la vez, y la importación del censo sustituye la lista completa: quien no aparece se desactiva, nunca se borra. No se puede desactivar a nadie de la mesa. — Evita errores de la mesa y conserva las referencias del registro interno.

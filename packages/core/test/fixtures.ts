@@ -25,7 +25,7 @@ import {
   type Mode,
   type Tallies,
   type Timing,
-} from "../src/index.js";
+} from "../src/index.ts";
 
 export const VOTING_ID = "0f1e2d3c4b5a69788796a5b4c3d2e1f0";
 export const SEED = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";

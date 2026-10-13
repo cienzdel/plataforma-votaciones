@@ -6,6 +6,9 @@ PROMPT_INICIAL.md
 node_modules/
 coverage/
 
+# Bases de datos locales
+*.db
+
 # Entornos de Python
 .venv/
 __pycache__/

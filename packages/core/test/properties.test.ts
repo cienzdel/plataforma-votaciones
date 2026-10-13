@@ -13,7 +13,7 @@ import {
   yesNo,
   type PostsResult,
   type Tallies,
-} from "../src/index.js";
+} from "../src/index.ts";
 
 const counters = { session_members: 45, session_present: 30, members: 45, present: 30, proxies: 0, rights: 30 };
 const ids = (prefix: string, n: number) => Array.from({ length: n }, (_, i) => prefix + (i + 1));

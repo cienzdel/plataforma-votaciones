@@ -1,5 +1,5 @@
-import { check, type Tallies } from "../types.js";
-import { idList, isId, orderIndex, tallyOf } from "./common.js";
+import { check, type Tallies } from "../types.ts";
+import { idList, isId, orderIndex, tallyOf } from "./common.ts";
 
 export const POSTS_VALUES = ["for", "against", "abstain"] as const;
 

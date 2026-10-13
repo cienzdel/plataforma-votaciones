@@ -1,4 +1,4 @@
-import { equalBytes, fromHex, hash, toHex } from "./bytes.js";
+import { equalBytes, fromHex, hash, toHex } from "./bytes.ts";
 
 /** RSABSSA-SHA384-PSS-Randomized verification parameters (spec/formats.md §2.1, §2.3). */
 const RSA_PSS = { name: "RSA-PSS", hash: "SHA-384" } as const;

@@ -1,4 +1,4 @@
-import { check, type Counters, type Tallies } from "../types.js";
+import { check, type Counters, type Tallies } from "../types.ts";
 
 const ID = /^[a-z][a-z0-9-]{0,31}$/;
 const RESERVED = new Set(["for", "against", "blank", "abstain", "against_all", "marked", "unmarked", "status"]);

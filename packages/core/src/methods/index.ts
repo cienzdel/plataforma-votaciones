@@ -1,8 +1,8 @@
-import { check, type Counters, type Method, type Tallies } from "../types.js";
-import { limitedVote, limitedVoteParams, type LimitedVoteResult } from "./limitedVote.js";
-import { posts, postsParams, type PostsResult } from "./posts.js";
-import { singleWinner, singleWinnerParams, type SingleWinnerResult } from "./singleWinner.js";
-import { yesNo, yesNoParams, type YesNoResult } from "./yesNo.js";
+import { check, type Counters, type Method, type Tallies } from "../types.ts";
+import { limitedVote, limitedVoteParams, type LimitedVoteResult } from "./limitedVote.ts";
+import { posts, postsParams, type PostsResult } from "./posts.ts";
+import { singleWinner, singleWinnerParams, type SingleWinnerResult } from "./singleWinner.ts";
+import { yesNo, yesNoParams, type YesNoResult } from "./yesNo.ts";
 
 export type MethodResult = YesNoResult | SingleWinnerResult | PostsResult | LimitedVoteResult;
 

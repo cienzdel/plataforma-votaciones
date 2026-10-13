@@ -1,5 +1,5 @@
-import { hash, toHex, utf8 } from "./bytes.js";
-import { SpecError } from "./types.js";
+import { hash, toHex, utf8 } from "./bytes.ts";
+import { SpecError } from "./types.ts";
 
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 

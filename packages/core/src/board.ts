@@ -1,16 +1,16 @@
-import { cellIdHex, cellSpec, tallyCells, voteAck, type CellSpec } from "./ballot.js";
-import { fromHex, isHex, toHex } from "./bytes.js";
-import { verifyChain, type ChainRecord } from "./chain.js";
-import { drandRandomness, drawCommitment, drawSigma, LIVE_ROUND_DELAY_SECONDS, QUICKNET, roundAt, shuffle } from "./draw.js";
-import { isFraction } from "./fraction.js";
-import { canonicalize, hashJsonHex, jsonEqual } from "./jcs.js";
-import { isId } from "./methods/common.js";
-import { computeResult, METHODS, needsTiebreakOrder, validateParams } from "./methods/index.js";
-import { limitedVoteConsistent } from "./methods/limitedVote.js";
-import { computeQuorum } from "./quorum.js";
-import { importVotingKey, keyFingerprint, verifySignature } from "./signature.js";
-import { isTimestamp, parseTimestamp } from "./time.js";
-import { check, SpecError, type BoardCounters, type Rules, type Tallies } from "./types.js";
+import { cellIdHex, cellSpec, tallyCells, voteAck, type CellSpec } from "./ballot.ts";
+import { fromHex, isHex, toHex } from "./bytes.ts";
+import { verifyChain, type ChainRecord } from "./chain.ts";
+import { drandRandomness, drawCommitment, drawSigma, LIVE_ROUND_DELAY_SECONDS, QUICKNET, roundAt, shuffle } from "./draw.ts";
+import { isFraction } from "./fraction.ts";
+import { canonicalize, hashJsonHex, jsonEqual } from "./jcs.ts";
+import { isId } from "./methods/common.ts";
+import { computeResult, METHODS, needsTiebreakOrder, validateParams } from "./methods/index.ts";
+import { limitedVoteConsistent } from "./methods/limitedVote.ts";
+import { computeQuorum } from "./quorum.ts";
+import { importVotingKey, keyFingerprint, verifySignature } from "./signature.ts";
+import { isTimestamp, parseTimestamp } from "./time.ts";
+import { check, SpecError, type BoardCounters, type Rules, type Tallies } from "./types.ts";
 
 /** Error codes of the universal verification, in the order of spec/protocol.md §10.2. */
 export type BoardErrorCode =
@@ -101,8 +101,10 @@ export type BoardReport =
   | { valid: false; error: BoardErrorCode; universalValid: boolean };
 
 class Failure extends Error {
-  constructor(readonly code: BoardErrorCode) {
+  readonly code: BoardErrorCode;
+  constructor(code: BoardErrorCode) {
     super(code);
+    this.code = code;
   }
 }
 

@@ -1,11 +1,11 @@
-import { concat, fromHex, hash, tag, toHex, utf8 } from "./bytes.js";
-import { hashJsonHex } from "./jcs.js";
-import { idList } from "./methods/common.js";
-import { limitedVoteParams, MARK_VALUES, STATUS_VALUES } from "./methods/limitedVote.js";
-import { postCell, postsParams, POSTS_VALUES } from "./methods/posts.js";
-import { singleWinnerValues } from "./methods/singleWinner.js";
-import { YES_NO_VALUES } from "./methods/yesNo.js";
-import { check, type Method, type Tallies } from "./types.js";
+import { concat, fromHex, hash, tag, toHex, utf8 } from "./bytes.ts";
+import { hashJsonHex } from "./jcs.ts";
+import { idList } from "./methods/common.ts";
+import { limitedVoteParams, MARK_VALUES, STATUS_VALUES } from "./methods/limitedVote.ts";
+import { postCell, postsParams, POSTS_VALUES } from "./methods/posts.ts";
+import { singleWinnerValues } from "./methods/singleWinner.ts";
+import { YES_NO_VALUES } from "./methods/yesNo.ts";
+import { check, type Method, type Tallies } from "./types.ts";
 
 /** Cell keys of a voting and the values allowed in each (spec/formats.md §3). */
 export type CellSpec = Map<string, readonly string[]>;

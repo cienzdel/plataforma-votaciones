@@ -22,7 +22,7 @@ import {
   verifyBoard,
   verifyChain,
   type PostsResult,
-} from "../src/index.js";
+} from "../src/index.ts";
 
 /** The shared case corpus of spec/cases (spec/cases/README.md). */
 const dir = new URL("../../../spec/cases/", import.meta.url);

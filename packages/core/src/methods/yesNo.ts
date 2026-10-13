@@ -1,6 +1,6 @@
-import { isFraction, meets } from "../fraction.js";
-import { check, type Counters, type Fraction, type Tallies } from "../types.js";
-import { baseValue, tallyOf } from "./common.js";
+import { isFraction, meets } from "../fraction.ts";
+import { check, type Counters, type Fraction, type Tallies } from "../types.ts";
+import { baseValue, tallyOf } from "./common.ts";
 
 export const YES_NO_VALUES = ["for", "against", "blank", "abstain"] as const;
 
