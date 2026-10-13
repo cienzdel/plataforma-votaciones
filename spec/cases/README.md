@@ -57,6 +57,14 @@ When a case expects an error, `error` is the code of the **first** check that fa
 | 12. Chain | `chain_mismatch`, `prev_mismatch` |
 | Receipt (§10.1) | `receipt_mismatch` |
 
+Checks outside a single board, reported by the verifier of a whole data repository ([`formats.md`](../formats.md) §9.1):
+
+| Document | Codes |
+|---|---|
+| Stand-alone draw ([`draws.md`](../draws.md) §6) | `format_invalid`, then the codes of step 9 |
+| Assent record ([`formats.md`](../formats.md) §8) | `format_invalid`, `result_mismatch` (outcome does not follow from `objections`), `profile_mismatch`, `deadline_too_early` (only when the profile is available) |
+| Any document | `document_unreadable`, `roll_call_mismatch` |
+
 ## Coverage
 
 | Area | Cases |

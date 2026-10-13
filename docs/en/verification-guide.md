@@ -18,17 +18,18 @@ If something does not match, tell the officials and, if you suspect tampering, u
 
 ## 2. Recomputing a result (anyone)
 
-The independent tool `tools/verify` (Python) is written from the specification, not from the server code. Intended usage (final commands will be documented with v1):
+The independent tool `tools/verify` (Python 3.11 or later) is written from the specification, not from the server code. It checks the whole data repository at once:
 
 ```bash
 # 1. Clone the instance's public data repository
 git clone <data-repository-url> data
 # 2. Install the tool (from this repository)
 pip install ./tools/verify
-# 3. Verify one vote or the whole chain
-verify board data/votes/<id>.json
-verify chain data/
+# 3. Verify the whole chain; optionally with your receipt and the body's profile
+python -m pv_verify data/ --receipt my-receipt.json --profile profile.json
 ```
+
+It ends with `RESULT: all checks passed` if everything matches; otherwise it shows the first failure of each document.
 
 ## 3. What the tool checks
 

@@ -246,3 +246,8 @@ Formato: `[Bloque N] Decisión — Justificación`. Las decisiones aplazadas se 
 
 - [H3] `packages/core` obtiene SHA-256 de `@noble/hashes` (auditada, sin dependencias, síncrona). — Mantiene síncronas y puras las funciones de recuento, tablón y sorteo; WebCrypto obligaría a hacerlas asíncronas.
 - [H3] El núcleo verifica las firmas RSA-PSS del tablón con WebCrypto (`crypto.subtle`), disponible en Node y en el navegador, sin añadir blindrsa-ts al núcleo. — La verificación es RSASSA-PSS estándar; blindrsa-ts solo hace falta para cegar (cliente) y llegará con la interfaz.
+
+## Hito H4 (2026-10-13)
+
+- [H4] El verificador Python usa `cryptography` (RSA-PSS), `py_ecc` (BLS12-381, para la firma de drand) y `tzdata` (zonas horarias en Windows), con versiones exactas. — `cryptography` es la referencia en Python; `py_ecc` incluye hash-to-curve sobre G1 y la verificación se compone con sus operaciones de curva; `tzdata` hace que los plazos del asentimiento den lo mismo en todos los sistemas.
+- [H4] La verificación de un repositorio de datos sigue la estructura de `spec/formats.md` §9.1: `chain.json` en la raíz y, junto a cada tablón, su aviso de apertura, su tabla de candidaturas y su lista nominal. — Hacía falta fijarla para que la herramienta encuentre cada documento sin configuración.

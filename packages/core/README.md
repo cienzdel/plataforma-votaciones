@@ -25,8 +25,8 @@ pnpm --filter @pv/core typecheck
 
 ## Límites · Limits
 
-- **ES** · El núcleo no verifica la firma BLS de drand: comprueba que `randomness = H(signature)`, la regla de la ronda, `σ` y el orden. La firma BLS la comprobará el verificador Python ([`tools/verify`](../../tools/verify/), hito H4).
-- **EN** · The core does not verify the drand BLS signature: it checks `randomness = H(signature)`, the round rule, `σ` and the order. The BLS signature will be checked by the Python verifier ([`tools/verify`](../../tools/verify/), milestone H4).
+- **ES** · El núcleo no verifica la firma BLS de drand: comprueba que `randomness = H(signature)`, la regla de la ronda, `σ` y el orden. La firma BLS la comprueba el verificador Python ([`tools/verify`](../../tools/verify/)).
+- **EN** · The core does not verify the drand BLS signature: it checks `randomness = H(signature)`, the round rule, `σ` and the order. The BLS signature is checked by the Python verifier ([`tools/verify`](../../tools/verify/)).
 - **ES** · Los plazos del asentimiento usan los datos de zonas horarias del entorno (`Intl`). · **EN** · Assent deadlines use the runtime's time-zone data (`Intl`).
 - **ES** · No se implementa ninguna primitiva criptográfica: SHA-256 viene de `@noble/hashes` y RSA-PSS de WebCrypto. · **EN** · No cryptographic primitive is implemented here: SHA-256 comes from `@noble/hashes` and RSA-PSS from WebCrypto.
 

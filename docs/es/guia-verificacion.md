@@ -18,17 +18,18 @@ Si algo no cuadra, avísalo a la mesa y, si sospechas manipulación, por el cana
 
 ## 2. Recalcular un resultado (cualquiera)
 
-La herramienta independiente `tools/verify` (Python) se escribe a partir de la especificación, no del código del servidor. Uso previsto (los comandos definitivos se documentarán con la v1):
+La herramienta independiente `tools/verify` (Python 3.11 o posterior) se escribe a partir de la especificación, no del código del servidor. Comprueba todo el repositorio de datos de una vez:
 
 ```bash
 # 1. Clonar el repositorio de datos públicos de la instancia
 git clone <url-del-repositorio-de-datos> datos
 # 2. Instalar la herramienta (desde este repositorio)
 pip install ./tools/verify
-# 3. Verificar una votación o toda la cadena
-verify board datos/votaciones/<id>.json
-verify chain datos/
+# 3. Verificar toda la cadena; opcionalmente, con tu comprobante y el perfil del órgano
+python -m pv_verify datos/ --receipt mi-comprobante.json --profile perfil.json
 ```
+
+Termina con `RESULT: all checks passed` si todo cuadra; si no, indica el primer fallo de cada documento.
 
 ## 3. Qué comprueba la herramienta
 

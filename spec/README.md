@@ -22,9 +22,8 @@ The specification has a version (`0.1` now). Every JSON document carries `versio
 
 ## Open points
 
-1. **drand domain separation tag** ([`draws.md`](draws.md) §1): to be checked against a reference BLS implementation in H4.
-2. **Base `present_plus_proxies`** for censure and reform: pending confirmation by the Pleno ([ADR-0023](../PLAN/adr/0023-interpretaciones-reglas.md)).
-3. **Review:** H2 is complete only when a second person has reviewed this specification and the corpus. Comments are welcome as issues.
+1. **Base `present_plus_proxies`** for censure and reform: pending confirmation by the Pleno ([ADR-0023](../PLAN/adr/0023-interpretaciones-reglas.md)).
+2. **Review:** H2 is complete only when a second person has reviewed this specification and the corpus. Comments are welcome as issues.
 
 ## Differences from the plan
 

@@ -26,7 +26,7 @@ Endpoints (any of them; rounds are identical): `https://api.drand.sh/v2/beacons/
 - **Round time:** `time(R) = genesis_time + (R − 1)·period`.
 - **First round at or after `t`** (Unix seconds, `t > genesis_time`): `round_at(t) = ⌈(t − genesis_time) / period⌉ + 1`.
 - **Randomness:** `randomness_R = H(signature_R)`, where `signature_R` is the 48-byte compressed G1 signature.
-- **Verification:** the signature is a BLS signature on G1 over the message `H(u64be(R))`, verified with the G2 public key above and the hash-to-curve suite of RFC 9380 with domain separation tag `BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_`. **[to be verified]** The DST string against a reference implementation, during milestone H4.
+- **Verification:** the signature is a BLS signature on G1 over the message `H(u64be(R))`, verified with the G2 public key above and the hash-to-curve suite of RFC 9380 with domain separation tag `BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_NUL_`. The DST was checked on 2026-10-13 (milestone H4): the real round 33026212 verifies with it and fails with the `…_POP_` tag (`tools/verify`, using py_ecc).
 
 ## 2. Commitment
 

@@ -268,6 +268,16 @@ record_hash = HJ(record)
 
 `path` is informative and is not hashed. A verifier MUST recompute every `record_hash` from `prev` and the hash of the document at `path`, and check that each `prev` equals the previous `record_hash`.
 
+### 9.1 Layout of the data repository
+
+- The chain file is `chain.json` at the root. Every `path` is relative to the root.
+- A board is published as `<name>.board.json`. Next to it, with the same `<name>`:
+  - `<name>.opening.json`: its opening notice (§12), always;
+  - `<name>.candidates.json`: its candidates table (§6), when `candidates_hash` is not `null`;
+  - `<name>.roll_call.json`: its roll-call list (§7), when `roll_call_hash` is not `null`.
+- Stand-alone draws and assent records are chained documents of their own and need no companion file.
+- Candidates tables and roll-call lists MAY be deleted when their retention period ends; their hashes stay in the boards.
+
 ## 10. Receipt
 
 Stored by the voter's browser and downloadable.
