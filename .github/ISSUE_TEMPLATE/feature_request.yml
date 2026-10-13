@@ -1,0 +1,30 @@
+name: "💡 Propuesta · Proposal"
+description: "Nueva funcionalidad o cambio de una decisión · New feature or change to a decision"
+labels: ["proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Las decisiones vigentes están en `PLAN/adr/`. Si tu propuesta cambia una, cítala.
+        Current decisions live in `PLAN/adr/`. If your proposal changes one, cite it.
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problema · Problem"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Propuesta · Proposal"
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Efecto en el secreto, la verificabilidad o la privacidad · Impact on secrecy, verifiability or privacy"
+  - type: input
+    id: adr
+    attributes:
+      label: "ADR afectado · Affected ADR"
+      placeholder: "ADR-00NN"

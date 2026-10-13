@@ -1,0 +1,28 @@
+{
+  "id": "quorum-003",
+  "kind": "quorum",
+  "title": "Second call rounds up",
+  "explanation": "A quarter of 45 is 11.25, rounded up to 12.",
+  "input": {
+    "rules": {
+      "quorum": [
+        1,
+        4
+      ],
+      "min_attendance": null
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 12,
+      "members": 45,
+      "present": 12,
+      "proxies": 0,
+      "rights": 12
+    }
+  },
+  "expected": {
+    "required": 12,
+    "met": true,
+    "min_attendance": null
+  }
+}

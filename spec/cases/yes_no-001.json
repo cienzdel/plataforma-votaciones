@@ -1,0 +1,38 @@
+{
+  "id": "yes_no-001",
+  "kind": "method",
+  "title": "Simple majority, approved",
+  "explanation": "10 for and 9 against: more for than against.",
+  "input": {
+    "method": "yes_no",
+    "params": {
+      "base": "cast",
+      "rule": "simple"
+    },
+    "tallies": {
+      "q": {
+        "for": 10,
+        "against": 9,
+        "blank": 5,
+        "abstain": 3
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "for": 10,
+    "against": 9,
+    "blank": 5,
+    "abstain": 3,
+    "cast": 24,
+    "base": 24,
+    "outcome": "approved"
+  }
+}

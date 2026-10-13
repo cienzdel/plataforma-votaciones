@@ -1,0 +1,14 @@
+{
+  "id": "assent-001",
+  "kind": "assent_deadline",
+  "title": "Winter time",
+  "explanation": "Sent 10 March 2027 at 10:00 Madrid (UTC+1): closes at the earliest on 12 March 23:59 Madrid, 22:59 UTC.",
+  "input": {
+    "sent_at": "2027-03-10T09:00:00Z",
+    "timezone": "Europe/Madrid",
+    "min_days": 2
+  },
+  "expected": {
+    "min_closes_at": "2027-03-12T22:59:00Z"
+  }
+}

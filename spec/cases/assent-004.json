@@ -1,0 +1,14 @@
+{
+  "id": "assent-004",
+  "kind": "assent_deadline",
+  "title": "Deadline day is the switch to winter time",
+  "explanation": "Sent 29 October 2027; 31 October is the DST change, so 23:59 Madrid is 22:59 UTC.",
+  "input": {
+    "sent_at": "2027-10-29T08:00:00Z",
+    "timezone": "Europe/Madrid",
+    "min_days": 2
+  },
+  "expected": {
+    "min_closes_at": "2027-10-31T22:59:00Z"
+  }
+}

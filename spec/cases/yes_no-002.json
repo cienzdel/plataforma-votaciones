@@ -1,0 +1,38 @@
+{
+  "id": "yes_no-002",
+  "kind": "method",
+  "title": "Simple majority, tie",
+  "explanation": "10 for and 10 against is not 'more for than against', so it is rejected.",
+  "input": {
+    "method": "yes_no",
+    "params": {
+      "base": "cast",
+      "rule": "simple"
+    },
+    "tallies": {
+      "q": {
+        "for": 10,
+        "against": 10,
+        "blank": 2,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "for": 10,
+    "against": 10,
+    "blank": 2,
+    "abstain": 0,
+    "cast": 22,
+    "base": 22,
+    "outcome": "rejected"
+  }
+}

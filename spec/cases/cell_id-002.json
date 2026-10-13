@@ -1,0 +1,14 @@
+{
+  "id": "cell_id-002",
+  "kind": "cell_id",
+  "title": "Cell id for cell key 'choice'",
+  "explanation": "id_c = H(tag('pv/cell/v1') || s || voting_id || utf8(c)).",
+  "input": {
+    "s": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "voting_id": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+    "cell": "choice"
+  },
+  "expected": {
+    "id": "f01cdf497a0484a4a17f6ac5641c047f8600d7bdfe94dea3a905f27cf7a6630d"
+  }
+}

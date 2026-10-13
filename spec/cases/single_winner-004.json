@@ -1,0 +1,51 @@
+{
+  "id": "single_winner-004",
+  "kind": "method",
+  "title": "Absolute majority in the first round",
+  "explanation": "29 cast; 15 is more than half.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "person",
+      "attempt": 0,
+      "candidates": [
+        "c1",
+        "c2",
+        "c3"
+      ],
+      "stage": "first"
+    },
+    "tallies": {
+      "choice": {
+        "c1": 15,
+        "c2": 8,
+        "c3": 3,
+        "blank": 2,
+        "against_all": 1,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 29,
+    "tallies": {
+      "c1": 15,
+      "c2": 8,
+      "c3": 3,
+      "blank": 2,
+      "against_all": 1
+    },
+    "outcome": "elected",
+    "elected": "c1"
+  }
+}

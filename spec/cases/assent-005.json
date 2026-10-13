@@ -1,0 +1,12 @@
+{
+  "id": "assent-005",
+  "kind": "assent_outcome",
+  "title": "No objections",
+  "explanation": "Nobody objected by the deadline.",
+  "input": {
+    "objections_at_close": 0
+  },
+  "expected": {
+    "outcome": "approved"
+  }
+}

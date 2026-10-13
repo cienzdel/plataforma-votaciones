@@ -1,0 +1,78 @@
+{
+  "id": "posts-004",
+  "kind": "method",
+  "title": "Tie in votes for, fewer against wins",
+  "explanation": "c1 and c2 both have 20 for in comms; c2 has fewer against and takes it.",
+  "input": {
+    "method": "posts",
+    "params": {
+      "posts": [
+        "comms"
+      ],
+      "candidates": [
+        {
+          "id": "c1",
+          "preferences": [
+            "comms"
+          ]
+        },
+        {
+          "id": "c2",
+          "preferences": [
+            "comms"
+          ]
+        }
+      ]
+    },
+    "tallies": {
+      "c1@comms": {
+        "for": 20,
+        "against": 6,
+        "abstain": 4
+      },
+      "c2@comms": {
+        "for": 20,
+        "against": 3,
+        "abstain": 7
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c1",
+      "c2"
+    ]
+  },
+  "expected": {
+    "assignment": {
+      "comms": "c2"
+    },
+    "ranking": {
+      "comms": [
+        {
+          "cand": "c2",
+          "for": 20,
+          "against": 3,
+          "abstain": 7,
+          "eligible": true
+        },
+        {
+          "cand": "c1",
+          "for": 20,
+          "against": 6,
+          "abstain": 4,
+          "eligible": true
+        }
+      ]
+    },
+    "unassigned": [
+      "c1"
+    ]
+  }
+}

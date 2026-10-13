@@ -1,0 +1,89 @@
+{
+  "id": "limited_vote-001",
+  "kind": "method",
+  "title": "Three seats, two marks each",
+  "explanation": "k = 2. The three most voted are elected; the fourth is a substitute.",
+  "input": {
+    "method": "limited_vote",
+    "params": {
+      "candidates": [
+        "c1",
+        "c2",
+        "c3",
+        "c4"
+      ],
+      "seats": 3,
+      "minimum": 0
+    },
+    "tallies": {
+      "c1": {
+        "marked": 20,
+        "unmarked": 10
+      },
+      "c2": {
+        "marked": 18,
+        "unmarked": 12
+      },
+      "c3": {
+        "marked": 15,
+        "unmarked": 15
+      },
+      "c4": {
+        "marked": 4,
+        "unmarked": 26
+      },
+      "status": {
+        "marked": 29,
+        "blank": 1,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c4",
+      "c3",
+      "c2",
+      "c1"
+    ]
+  },
+  "expected": {
+    "k": 2,
+    "ranking": [
+      {
+        "cand": "c1",
+        "votes": 20
+      },
+      {
+        "cand": "c2",
+        "votes": 18
+      },
+      {
+        "cand": "c3",
+        "votes": 15
+      },
+      {
+        "cand": "c4",
+        "votes": 4
+      }
+    ],
+    "elected": [
+      "c1",
+      "c2",
+      "c3"
+    ],
+    "substitutes": [
+      "c4"
+    ],
+    "vacant_seats": 0,
+    "marked_ballots": 29,
+    "blank": 1,
+    "abstain": 0
+  }
+}

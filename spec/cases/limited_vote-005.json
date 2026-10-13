@@ -1,0 +1,76 @@
+{
+  "id": "limited_vote-005",
+  "kind": "method",
+  "title": "Minimum votes leaves a seat vacant",
+  "explanation": "Minimum 5: c3 (4 votes) is neither elected nor substitute, so one of the 3 seats is vacant.",
+  "input": {
+    "method": "limited_vote",
+    "params": {
+      "candidates": [
+        "c1",
+        "c2",
+        "c3"
+      ],
+      "seats": 3,
+      "minimum": 5
+    },
+    "tallies": {
+      "c1": {
+        "marked": 12,
+        "unmarked": 11
+      },
+      "c2": {
+        "marked": 9,
+        "unmarked": 14
+      },
+      "c3": {
+        "marked": 4,
+        "unmarked": 19
+      },
+      "status": {
+        "marked": 20,
+        "blank": 2,
+        "abstain": 1
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c1",
+      "c2",
+      "c3"
+    ]
+  },
+  "expected": {
+    "k": 2,
+    "ranking": [
+      {
+        "cand": "c1",
+        "votes": 12
+      },
+      {
+        "cand": "c2",
+        "votes": 9
+      },
+      {
+        "cand": "c3",
+        "votes": 4
+      }
+    ],
+    "elected": [
+      "c1",
+      "c2"
+    ],
+    "substitutes": [],
+    "vacant_seats": 1,
+    "marked_ballots": 20,
+    "blank": 2,
+    "abstain": 1
+  }
+}

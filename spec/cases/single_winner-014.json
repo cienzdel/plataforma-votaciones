@@ -1,0 +1,53 @@
+{
+  "id": "single_winner-014",
+  "kind": "method",
+  "title": "Run-off tie, first time",
+  "explanation": "A tie in the run-off is voted again once.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "person",
+      "attempt": 0,
+      "candidates": [
+        "c1",
+        "c2"
+      ],
+      "stage": "runoff"
+    },
+    "tallies": {
+      "choice": {
+        "c1": 14,
+        "c2": 14,
+        "blank": 1,
+        "against_all": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 29,
+    "tallies": {
+      "c1": 14,
+      "c2": 14,
+      "blank": 1,
+      "against_all": 0
+    },
+    "outcome": "repeat",
+    "qualified": [],
+    "tied": [
+      "c1",
+      "c2"
+    ],
+    "spots": 1
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "id": "single_winner-010",
+  "kind": "method",
+  "title": "Zero votes still compete",
+  "explanation": "c2 and c3 tie with 0 votes for the second place.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "person",
+      "attempt": 0,
+      "candidates": [
+        "c1",
+        "c2",
+        "c3"
+      ],
+      "stage": "first"
+    },
+    "tallies": {
+      "choice": {
+        "c1": 5,
+        "c2": 0,
+        "c3": 0,
+        "blank": 6,
+        "against_all": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 11,
+    "tallies": {
+      "c1": 5,
+      "c2": 0,
+      "c3": 0,
+      "blank": 6,
+      "against_all": 0
+    },
+    "outcome": "repeat",
+    "qualified": [
+      "c1"
+    ],
+    "tied": [
+      "c2",
+      "c3"
+    ],
+    "spots": 1
+  }
+}

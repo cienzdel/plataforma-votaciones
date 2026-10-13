@@ -1,0 +1,119 @@
+{
+  "id": "posts-010",
+  "kind": "method",
+  "title": "Later vacancy goes to the next eligible candidate without a post",
+  "explanation": "comms: c1 holds it, then c2 (already in sports) and c3. When c1 leaves, c2 is skipped because it holds sports, so comms goes to c3.",
+  "input": {
+    "method": "posts",
+    "params": {
+      "posts": [
+        "comms",
+        "sports"
+      ],
+      "candidates": [
+        {
+          "id": "c1",
+          "preferences": [
+            "comms"
+          ]
+        },
+        {
+          "id": "c2",
+          "preferences": [
+            "sports",
+            "comms"
+          ]
+        },
+        {
+          "id": "c3",
+          "preferences": [
+            "comms"
+          ]
+        }
+      ]
+    },
+    "tallies": {
+      "c1@comms": {
+        "for": 24,
+        "against": 2,
+        "abstain": 4
+      },
+      "c2@sports": {
+        "for": 20,
+        "against": 3,
+        "abstain": 7
+      },
+      "c2@comms": {
+        "for": 22,
+        "against": 3,
+        "abstain": 5
+      },
+      "c3@comms": {
+        "for": 15,
+        "against": 6,
+        "abstain": 9
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c1",
+      "c2",
+      "c3"
+    ],
+    "vacancy": {
+      "post": "comms",
+      "leaving": "c1"
+    }
+  },
+  "expected": {
+    "assignment": {
+      "comms": "c1",
+      "sports": "c2"
+    },
+    "ranking": {
+      "comms": [
+        {
+          "cand": "c1",
+          "for": 24,
+          "against": 2,
+          "abstain": 4,
+          "eligible": true
+        },
+        {
+          "cand": "c2",
+          "for": 22,
+          "against": 3,
+          "abstain": 5,
+          "eligible": true
+        },
+        {
+          "cand": "c3",
+          "for": 15,
+          "against": 6,
+          "abstain": 9,
+          "eligible": true
+        }
+      ],
+      "sports": [
+        {
+          "cand": "c2",
+          "for": 20,
+          "against": 3,
+          "abstain": 7,
+          "eligible": true
+        }
+      ]
+    },
+    "unassigned": [
+      "c3"
+    ],
+    "vacancy_next": "c3"
+  }
+}

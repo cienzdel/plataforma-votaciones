@@ -1,0 +1,28 @@
+{
+  "id": "quorum-004",
+  "kind": "quorum",
+  "title": "Proxies do not count for quorum",
+  "explanation": "11 present plus 2 proxies is still 11 present; 12 are needed at second call.",
+  "input": {
+    "rules": {
+      "quorum": [
+        1,
+        4
+      ],
+      "min_attendance": null
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 11,
+      "members": 45,
+      "present": 11,
+      "proxies": 2,
+      "rights": 13
+    }
+  },
+  "expected": {
+    "required": 12,
+    "met": false,
+    "min_attendance": null
+  }
+}

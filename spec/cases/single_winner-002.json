@@ -1,0 +1,44 @@
+{
+  "id": "single_winner-002",
+  "kind": "method",
+  "title": "Single candidate, tie with against all",
+  "explanation": "12 for and 12 against all is not a simple majority: the position stays vacant.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "person",
+      "attempt": 0,
+      "candidates": [
+        "c1"
+      ],
+      "stage": "first"
+    },
+    "tallies": {
+      "choice": {
+        "c1": 12,
+        "blank": 2,
+        "against_all": 12,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 26,
+    "tallies": {
+      "c1": 12,
+      "blank": 2,
+      "against_all": 12
+    },
+    "outcome": "vacant"
+  }
+}

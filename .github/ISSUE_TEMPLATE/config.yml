@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "🔒 Vulnerabilidad de seguridad · Security vulnerability"
+    url: https://docs.github.com/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability
+    about: "No la publiques: usa Security → Report a vulnerability · Do not disclose it publicly: use Security → Report a vulnerability."

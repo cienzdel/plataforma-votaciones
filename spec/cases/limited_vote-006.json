@@ -1,0 +1,66 @@
+{
+  "id": "limited_vote-006",
+  "kind": "method",
+  "title": "Fewer candidates than seats",
+  "explanation": "3 seats, 2 candidates: both elected, one seat vacant.",
+  "input": {
+    "method": "limited_vote",
+    "params": {
+      "candidates": [
+        "c1",
+        "c2"
+      ],
+      "seats": 3,
+      "minimum": 0
+    },
+    "tallies": {
+      "c1": {
+        "marked": 15,
+        "unmarked": 13
+      },
+      "c2": {
+        "marked": 14,
+        "unmarked": 14
+      },
+      "status": {
+        "marked": 25,
+        "blank": 3,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c2",
+      "c1"
+    ]
+  },
+  "expected": {
+    "k": 2,
+    "ranking": [
+      {
+        "cand": "c1",
+        "votes": 15
+      },
+      {
+        "cand": "c2",
+        "votes": 14
+      }
+    ],
+    "elected": [
+      "c1",
+      "c2"
+    ],
+    "substitutes": [],
+    "vacant_seats": 1,
+    "marked_ballots": 25,
+    "blank": 3,
+    "abstain": 0
+  }
+}

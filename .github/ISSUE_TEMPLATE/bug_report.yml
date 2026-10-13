@@ -1,0 +1,31 @@
+name: "🐞 Error · Bug"
+description: "Algo no funciona como dice la documentación · Something does not work as documented"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **No incluyas datos personales, correos reales, tokens ni comprobantes de voto.** Los fallos de seguridad van por *Security → Report a vulnerability*.
+        **Do not include personal data, real e-mails, tokens or vote receipts.** Security issues go through *Security → Report a vulnerability*.
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Componente · Component"
+      options: ["Protocolo / spec", "Núcleo · Core", "API", "Interfaz · Web", "Verificador · Verifier (CLI)", "Infraestructura · Infra", "Documentación · Docs"]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: "Qué ocurre y qué esperabas · What happens and what you expected"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Pasos para reproducir · Steps to reproduce"
+      description: "Con datos ficticios · With fictitious data"
+  - type: input
+    id: version
+    attributes:
+      label: "Versión o commit · Version or commit"

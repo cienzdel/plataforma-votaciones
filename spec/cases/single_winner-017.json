@@ -1,0 +1,47 @@
+{
+  "id": "single_winner-017",
+  "kind": "method",
+  "title": "Against all is highest, blocking",
+  "explanation": "With against_all_blocks true, 'against all' above both leaves the position vacant.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": true,
+      "subject": "person",
+      "attempt": 0,
+      "candidates": [
+        "c1",
+        "c2"
+      ],
+      "stage": "runoff"
+    },
+    "tallies": {
+      "choice": {
+        "c1": 8,
+        "c2": 7,
+        "blank": 0,
+        "against_all": 14,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 29,
+    "tallies": {
+      "c1": 8,
+      "c2": 7,
+      "blank": 0,
+      "against_all": 14
+    },
+    "outcome": "vacant"
+  }
+}

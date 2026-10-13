@@ -1,0 +1,25 @@
+{
+  "id": "jcs-001",
+  "kind": "jcs",
+  "title": "Member order and no whitespace",
+  "explanation": "Canonical JSON under the restricted profile of formats.md section 1.3.",
+  "input": {
+    "value": {
+      "b": 1,
+      "a": [
+        true,
+        false,
+        null
+      ],
+      "c": {
+        "z": "x",
+        "y": -7
+      }
+    }
+  },
+  "expected": {
+    "jcs_utf8_hex": "7b2261223a5b747275652c66616c73652c6e756c6c5d2c2262223a312c2263223a7b2279223a2d372c227a223a2278227d7d",
+    "jcs_text": "{\"a\":[true,false,null],\"b\":1,\"c\":{\"y\":-7,\"z\":\"x\"}}",
+    "hash": "8b392438590a1e5cd92b4dc627040eef027339c6702b41425da2ce1b3142cc43"
+  }
+}

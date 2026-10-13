@@ -1,0 +1,48 @@
+{
+  "id": "single_winner-018",
+  "kind": "method",
+  "title": "Slates use the same rule",
+  "explanation": "Two slates; s1 has more than half of the 30 votes cast.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "slate",
+      "attempt": 0,
+      "candidates": [
+        "s1",
+        "s2"
+      ],
+      "stage": "first"
+    },
+    "tallies": {
+      "choice": {
+        "s1": 16,
+        "s2": 12,
+        "blank": 2,
+        "against_all": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 30,
+    "tallies": {
+      "s1": 16,
+      "s2": 12,
+      "blank": 2,
+      "against_all": 0
+    },
+    "outcome": "elected",
+    "elected": "s1"
+  }
+}

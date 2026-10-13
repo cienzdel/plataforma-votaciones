@@ -1,0 +1,78 @@
+{
+  "id": "limited_vote-008",
+  "kind": "method",
+  "title": "Zero-vote candidates are still substitutes",
+  "explanation": "With minimum 0, a candidate with 0 votes is a substitute.",
+  "input": {
+    "method": "limited_vote",
+    "params": {
+      "candidates": [
+        "c1",
+        "c2",
+        "c3"
+      ],
+      "seats": 2,
+      "minimum": 0
+    },
+    "tallies": {
+      "c1": {
+        "marked": 9,
+        "unmarked": 7
+      },
+      "c2": {
+        "marked": 7,
+        "unmarked": 9
+      },
+      "c3": {
+        "marked": 0,
+        "unmarked": 16
+      },
+      "status": {
+        "marked": 16,
+        "blank": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c3",
+      "c2",
+      "c1"
+    ]
+  },
+  "expected": {
+    "k": 1,
+    "ranking": [
+      {
+        "cand": "c1",
+        "votes": 9
+      },
+      {
+        "cand": "c2",
+        "votes": 7
+      },
+      {
+        "cand": "c3",
+        "votes": 0
+      }
+    ],
+    "elected": [
+      "c1",
+      "c2"
+    ],
+    "substitutes": [
+      "c3"
+    ],
+    "vacant_seats": 0,
+    "marked_ballots": 16,
+    "blank": 0,
+    "abstain": 0
+  }
+}

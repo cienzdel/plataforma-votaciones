@@ -1,0 +1,49 @@
+{
+  "id": "chain-002",
+  "kind": "chain_error",
+  "title": "Broken link",
+  "explanation": "The second record does not point to the first one.",
+  "input": {
+    "documents": [
+      {
+        "type": "board",
+        "version": 1,
+        "voting_id": "00000000000000000000000000000000",
+        "title": "Example A"
+      },
+      {
+        "type": "draw",
+        "version": 1,
+        "voting_id": "11111111111111111111111111111111",
+        "purpose": "tie"
+      },
+      {
+        "type": "assent",
+        "version": 1,
+        "voting_id": "22222222222222222222222222222222",
+        "outcome": "approved"
+      }
+    ],
+    "records": [
+      {
+        "board": "01dc6991dace608512d3aa9cb482162ce9a3632bb18e179fef586ed8048ce20b",
+        "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+        "record_hash": "ebf3a42fc7f11d95e083a7ec0262a2f41776d22b3c046b0d5eaabe8b59883fa5"
+      },
+      {
+        "board": "d6579a8f4299a2cdbf37fa35b8b423e0a0210e2617c118ec6b26c966209e0428",
+        "prev": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "record_hash": "a0cd5d9d75eb95a80206a0622c8ea0a8c8788730e7be3641b1e3e0edabd14109"
+      },
+      {
+        "board": "442a6cacb5416036192faaf298761bb7cb52f5b771a860c00fbb20421ec3f125",
+        "prev": "a0cd5d9d75eb95a80206a0622c8ea0a8c8788730e7be3641b1e3e0edabd14109",
+        "record_hash": "dc6e98ab9146af82e3c0e6aa92e1908d10674eadcc74048fa0ee405d909f8892"
+      }
+    ]
+  },
+  "expected": {
+    "error": "prev_mismatch",
+    "index": 1
+  }
+}

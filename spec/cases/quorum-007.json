@@ -1,0 +1,28 @@
+{
+  "id": "quorum-007",
+  "kind": "quorum",
+  "title": "Restricted voting uses the session for quorum",
+  "explanation": "Quorum is about the session (40 members, 14 present), not the 6 members of the degree.",
+  "input": {
+    "rules": {
+      "quorum": [
+        1,
+        3
+      ],
+      "min_attendance": null
+    },
+    "counters": {
+      "session_members": 40,
+      "session_present": 14,
+      "members": 6,
+      "present": 4,
+      "proxies": 1,
+      "rights": 5
+    }
+  },
+  "expected": {
+    "required": 14,
+    "met": true,
+    "min_attendance": null
+  }
+}

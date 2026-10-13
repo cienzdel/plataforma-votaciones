@@ -1,0 +1,68 @@
+{
+  "id": "limited_vote-007",
+  "kind": "method",
+  "title": "Degree-restricted single seat",
+  "explanation": "Only members of the degree vote: 4 present plus 1 proxy from a degree member held by someone from another degree.",
+  "input": {
+    "method": "limited_vote",
+    "params": {
+      "candidates": [
+        "c1",
+        "c2"
+      ],
+      "seats": 1,
+      "minimum": 0
+    },
+    "tallies": {
+      "c1": {
+        "marked": 3,
+        "unmarked": 2
+      },
+      "c2": {
+        "marked": 2,
+        "unmarked": 3
+      },
+      "status": {
+        "marked": 5,
+        "blank": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 40,
+      "session_present": 14,
+      "members": 6,
+      "present": 4,
+      "proxies": 1,
+      "rights": 5
+    },
+    "tiebreak_order": [
+      "c1",
+      "c2"
+    ],
+    "electorate_filter": "physics"
+  },
+  "expected": {
+    "k": 1,
+    "ranking": [
+      {
+        "cand": "c1",
+        "votes": 3
+      },
+      {
+        "cand": "c2",
+        "votes": 2
+      }
+    ],
+    "elected": [
+      "c1"
+    ],
+    "substitutes": [
+      "c2"
+    ],
+    "vacant_seats": 0,
+    "marked_ballots": 5,
+    "blank": 0,
+    "abstain": 0
+  }
+}

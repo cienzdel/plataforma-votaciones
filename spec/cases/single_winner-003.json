@@ -1,0 +1,45 @@
+{
+  "id": "single_winner-003",
+  "kind": "method",
+  "title": "Single candidate, many abstentions",
+  "explanation": "3 for and 2 against all; abstentions do not matter for a simple majority.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "person",
+      "attempt": 0,
+      "candidates": [
+        "c1"
+      ],
+      "stage": "first"
+    },
+    "tallies": {
+      "choice": {
+        "c1": 3,
+        "blank": 0,
+        "against_all": 2,
+        "abstain": 30
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 5,
+    "tallies": {
+      "c1": 3,
+      "blank": 0,
+      "against_all": 2
+    },
+    "outcome": "elected",
+    "elected": "c1"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "id": "posts-003",
+  "kind": "method",
+  "title": "A displaced candidate falls back to their second choice",
+  "explanation": "c2 proposes to comms first (tie-break order) and is held; c1, with more votes there, displaces c2, who then gets sports over c3.",
+  "input": {
+    "method": "posts",
+    "params": {
+      "posts": [
+        "comms",
+        "sports"
+      ],
+      "candidates": [
+        {
+          "id": "c1",
+          "preferences": [
+            "comms"
+          ]
+        },
+        {
+          "id": "c2",
+          "preferences": [
+            "comms",
+            "sports"
+          ]
+        },
+        {
+          "id": "c3",
+          "preferences": [
+            "sports"
+          ]
+        }
+      ]
+    },
+    "tallies": {
+      "c1@comms": {
+        "for": 22,
+        "against": 2,
+        "abstain": 6
+      },
+      "c2@comms": {
+        "for": 18,
+        "against": 5,
+        "abstain": 7
+      },
+      "c2@sports": {
+        "for": 17,
+        "against": 5,
+        "abstain": 8
+      },
+      "c3@sports": {
+        "for": 16,
+        "against": 4,
+        "abstain": 10
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c2",
+      "c3",
+      "c1"
+    ]
+  },
+  "expected": {
+    "assignment": {
+      "comms": "c1",
+      "sports": "c2"
+    },
+    "ranking": {
+      "comms": [
+        {
+          "cand": "c1",
+          "for": 22,
+          "against": 2,
+          "abstain": 6,
+          "eligible": true
+        },
+        {
+          "cand": "c2",
+          "for": 18,
+          "against": 5,
+          "abstain": 7,
+          "eligible": true
+        }
+      ],
+      "sports": [
+        {
+          "cand": "c2",
+          "for": 17,
+          "against": 5,
+          "abstain": 8,
+          "eligible": true
+        },
+        {
+          "cand": "c3",
+          "for": 16,
+          "against": 4,
+          "abstain": 10,
+          "eligible": true
+        }
+      ]
+    },
+    "unassigned": [
+      "c3"
+    ]
+  }
+}

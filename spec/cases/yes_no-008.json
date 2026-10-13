@@ -1,0 +1,41 @@
+{
+  "id": "yes_no-008",
+  "kind": "method",
+  "title": "Two thirds, exact",
+  "explanation": "Base 30 (28 present + 2 proxies); two thirds of 30 is exactly 20.",
+  "input": {
+    "method": "yes_no",
+    "params": {
+      "base": "present_plus_proxies",
+      "rule": [
+        2,
+        3
+      ]
+    },
+    "tallies": {
+      "q": {
+        "for": 20,
+        "against": 6,
+        "blank": 2,
+        "abstain": 2
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 28,
+      "members": 45,
+      "present": 28,
+      "proxies": 2,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "for": 20,
+    "against": 6,
+    "blank": 2,
+    "abstain": 2,
+    "cast": 28,
+    "base": 30,
+    "outcome": "approved"
+  }
+}

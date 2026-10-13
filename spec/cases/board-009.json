@@ -1,0 +1,188 @@
+{
+  "id": "board-009",
+  "kind": "board_error",
+  "title": "A token was counted twice",
+  "explanation": "The same valid credential appears twice in participation.",
+  "input": {
+    "opening": {
+      "closes_at": null,
+      "draw_commitment": null,
+      "draw_round": null,
+      "key": {
+        "fingerprint": "12d73b7b00084a748e91f9f0b96163b23f569d9c7885b8ac238d8abd915dd803",
+        "public_key": "308201a2300d06092a864886f70d01010105000382018f003082018a0282018100c6fdefd17f1ef474d6d37375ef17f714e11551afe27af5d83d5607814681761edf2f50475b4ff38dab131381aeb190070dfb8aad5878ec899cb58f6129fa418b199eb70b574c967dec81dd4d7fa9739a169daacb0ccd4e8eb1dad3c49e0d711179ed9d88b8137e212478d3cd824124f0f93fe43f918c369db6ab1c4e0544641118964ad868631957c9aed4b9ae99c7c27eb0677f677b3eb5983c6ae1ad95f2cec140a88ceedd2ae061d9cde4086f5c57a10fc6d1b641d2afa86409ac73b5d78a9507322c1085b906ef71123fd9af8be689affc863c7643e17cb3dfa30513e9fb0bf7733581aa3103b93b2fd8b6a5e864241ca0e16022965e0e0a8a3e7bbbe7de0da347d4df0187ab198be81e3616aeb7f8fbc467ee42a99006f39d39a3864a17a2c4fc709800abfaf3dcd2e99a88783a28ec203a9a3ad4fb4c59f33a9d620631406d633cd2c921a248fac6f95ad85b975f4e8dbec11a696575be87253a61bb4eed37fd18091b70933174164b1f42b98c1f64b1c07aeafa9147976eb952cfa4c30203010001"
+      },
+      "opened_at": "2027-03-10T18:30:00Z",
+      "quorum": {
+        "forced": null,
+        "met": true,
+        "min_attendance": null,
+        "required": 4
+      },
+      "rules": {
+        "electorate_filter": null,
+        "method": "yes_no",
+        "min_attendance": null,
+        "mode": "secret",
+        "params": {
+          "base": "cast",
+          "rule": "simple"
+        },
+        "profile": {
+          "hash": "4d7c5059d6643531b085ef2e23b20dae3bb0d557e73c04d0a695d17a8765e616",
+          "id": "example",
+          "version": "0.1.0"
+        },
+        "quorum": [
+          1,
+          3
+        ],
+        "timing": "live"
+      },
+      "rules_hash": "731b781bf7e62d7583d035c2a76fb2ae6d198a4ef8842e50bde121ac92b934e1",
+      "title": "Example: approval of the minutes",
+      "type": "opening",
+      "version": 1,
+      "voting_id": "0f1e2d3c4b5a69788796a5b4c3d2e1f0"
+    },
+    "board": {
+      "candidates_hash": null,
+      "cells": {
+        "q": [
+          [
+            "578bb46b18db37c69f4c17372a2bf9c88f41ab2035b3e728446e536b6778c44a",
+            "against"
+          ],
+          [
+            "5f4853820c92de33c5e18fb5b3cd3bf1806e726b0341b63dec5e8c1de627229e",
+            "for"
+          ],
+          [
+            "77f85452aa8a6b57af584ce55002a587a62ab1dec7f14ee2c5622ae144278dca",
+            "for"
+          ],
+          [
+            "a696391c3bc9336dc9637872ac0cd056ec245aa9428e0ecbd040faa0755f47d1",
+            "abstain"
+          ],
+          [
+            "e2ad882916e801120b14122123d8d203db5710ac80cd99a6942032ab6d6beed9",
+            "for"
+          ],
+          [
+            "e9a015fcaeb5ddb09b8497a13ec7117e86677cd22bea06a7788d85b77b527cad",
+            "blank"
+          ]
+        ]
+      },
+      "closed_at": "2027-03-10T18:42:00Z",
+      "counters": {
+        "issued": 6,
+        "members": 12,
+        "present": 6,
+        "proxies": 1,
+        "received": 6,
+        "rights": 7,
+        "session_members": 12,
+        "session_present": 6
+      },
+      "draw": null,
+      "key": {
+        "fingerprint": "12d73b7b00084a748e91f9f0b96163b23f569d9c7885b8ac238d8abd915dd803",
+        "public_key": "308201a2300d06092a864886f70d01010105000382018f003082018a0282018100c6fdefd17f1ef474d6d37375ef17f714e11551afe27af5d83d5607814681761edf2f50475b4ff38dab131381aeb190070dfb8aad5878ec899cb58f6129fa418b199eb70b574c967dec81dd4d7fa9739a169daacb0ccd4e8eb1dad3c49e0d711179ed9d88b8137e212478d3cd824124f0f93fe43f918c369db6ab1c4e0544641118964ad868631957c9aed4b9ae99c7c27eb0677f677b3eb5983c6ae1ad95f2cec140a88ceedd2ae061d9cde4086f5c57a10fc6d1b641d2afa86409ac73b5d78a9507322c1085b906ef71123fd9af8be689affc863c7643e17cb3dfa30513e9fb0bf7733581aa3103b93b2fd8b6a5e864241ca0e16022965e0e0a8a3e7bbbe7de0da347d4df0187ab198be81e3616aeb7f8fbc467ee42a99006f39d39a3864a17a2c4fc709800abfaf3dcd2e99a88783a28ec203a9a3ad4fb4c59f33a9d620631406d633cd2c921a248fac6f95ad85b975f4e8dbec11a696575be87253a61bb4eed37fd18091b70933174164b1f42b98c1f64b1c07aeafa9147976eb952cfa4c30203010001"
+      },
+      "opened_at": "2027-03-10T18:30:00Z",
+      "participation": [
+        [
+          "23c19fa1a0e85166962b710445a61957ef81e8c9138f10c0d41a0c79acee642c0f1e2d3c4b5a69788796a5b4c3d2e1f02bc56217f0019f3d3a31896b23283c444db05e1c9df4fb7b591b945363701f43",
+          "742cdeb2901b77da353ddec3138ca93ceae0e8cf45bd54639778a9643a71fbe5046a034c7fac82c171b3d89b162b076ad3df586cd392c8748bf6e89f93d7a0d5dc9f18f4cf2ed954ff10bddff97fd0b0d9929b912aed125a4dfb28ac909456b62aff66dc21d1f69802271b05ee3611b7d5f0ee2d5c183d92b6c2cfadec9d9065f0ead412708fdd8f5d0c1438da874661a051aabcaf72620a87646cae6f7dba629bb08fba26970bd4ba51a990f6c2a78575f92b00a874369a75ba2f6680f297da3c1a205401d80b2a49b889cc657647fb28c01e80258e209fd435e3003fad1697cc41fd32453edcd2fb0ab0a1fccdf0e6217dcefb3fd5d8164015787f64fd10830436fd731872a9a04555b50d712ff3a51e34f21f999a477761cfcaff8ed4530c14d6d44127b57249c575fed1d3e607281ca5b618fb8a4c82863443ac16db91d67faa4a70a6a36d142ffd562cffcece61e04ca743f0e3e1e5787ef6db36f8685aca52d979d0f69ba668cfde714044a3f5a8f57e29450c97e2cd7daba0a49f5d63"
+        ],
+        [
+          "23c19fa1a0e85166962b710445a61957ef81e8c9138f10c0d41a0c79acee642c0f1e2d3c4b5a69788796a5b4c3d2e1f02bc56217f0019f3d3a31896b23283c444db05e1c9df4fb7b591b945363701f43",
+          "742cdeb2901b77da353ddec3138ca93ceae0e8cf45bd54639778a9643a71fbe5046a034c7fac82c171b3d89b162b076ad3df586cd392c8748bf6e89f93d7a0d5dc9f18f4cf2ed954ff10bddff97fd0b0d9929b912aed125a4dfb28ac909456b62aff66dc21d1f69802271b05ee3611b7d5f0ee2d5c183d92b6c2cfadec9d9065f0ead412708fdd8f5d0c1438da874661a051aabcaf72620a87646cae6f7dba629bb08fba26970bd4ba51a990f6c2a78575f92b00a874369a75ba2f6680f297da3c1a205401d80b2a49b889cc657647fb28c01e80258e209fd435e3003fad1697cc41fd32453edcd2fb0ab0a1fccdf0e6217dcefb3fd5d8164015787f64fd10830436fd731872a9a04555b50d712ff3a51e34f21f999a477761cfcaff8ed4530c14d6d44127b57249c575fed1d3e607281ca5b618fb8a4c82863443ac16db91d67faa4a70a6a36d142ffd562cffcece61e04ca743f0e3e1e5787ef6db36f8685aca52d979d0f69ba668cfde714044a3f5a8f57e29450c97e2cd7daba0a49f5d63"
+        ],
+        [
+          "4ee6a4b395cbd055ef1fc478e8d82eff35b39c27cfbc0b38de74f29cb6ebd2ec0f1e2d3c4b5a69788796a5b4c3d2e1f0c1170384a99069f4362955df57692f5db345ccd3ceea7a7982b1c4224a71c5d9",
+          "3f3f95a2ea6fa2c3bda7a0d9888aa0d6edec5287eb943562c8697d586968d8bd5f302c37b102aef49d446d6c09ccb8a3e1360b445b6bc942c3a1b7f122e281c7262eef4da3489dee82e9c6833e9ec9a25a54576702a876a71e9efedf9225c7b6c34e29e033d1f0474ff08defd817dec0ca1f632efcabd5867e1e88c774ced4bdbcd74971e5645573834552a8626560ddd96c355bbd44987583c6ef30dcd74726841f37bade116e39af2b56dd4ec38d9209d10cb8805b26f406abae389adb71cb1b34e1a19faf076ca597590dd11f7df20a49c1b6d91d0b70d732749b1d07837bbbfc30aff6c6a99603e58049438e89b2ee8c4558b4da932a9023d30161ec35ef2d91b3a7009d387efd8ce408a794c6483a8bb6aec20f0df6609bdb4ebe2232952c7b28f0726f09986c2d216b63cfed82e454fdbdd5a39347d8d73f3e178b4df32e79e3bc764836e2836cca439e48cc7df6c5e71a993a1bc4a798dfe36aebba0a4c7810c6ffa5b962a00a1aca8bcca423b630e44440f8d5bd4bfb1b5ba1c3274b"
+        ],
+        [
+          "7fffa536090d6f6e10f7e2719d2241cc72ebb3a63ebcb131abb40275c532c2900f1e2d3c4b5a69788796a5b4c3d2e1f0f6eb71000114cfc93f6724d4cee6cd21c1caa96f2c2554fce0e79cef76ccc50b",
+          "2b110e4cf269ea365c1cdae97641346d95f2a0727f06a6934cff922bd9f1d90bd0eebf7dc9a7a362aae98bf34dc24e815ae6aeaf5f1c366940ce6a86135c4a2093f738b618f00acb320b5cca04d24808b0778702d31d4b83b9b97b77113c280d4781262a4dbeee6f179e013f1c512e7298ffba771829810d0310fa55289e894816165092a622cf89233c0fc906e0d4b69c5a02ddc6e4a0a6f6ce3572dd1aa8f01dc3a1d0f59d534e58be0374ed6084eb426b3dc95254e22e460d2e0a90de7d4e6896730b01172858ac6a0072bf6982c5e4c9e0c4170c742d5aca80116bd83f1e5447ba9519e6f84bda7e29f78a33deaed6c597cf81c69463935d66c846e07539117c66ed4fdc132d3b3bb84638f5ff7ca63c6fff28732dc4a250f5d54cc5fd6ebfd91ca79df863f1c1329278f4ec35f89dfbd8bf41d7b5dda5cb57f697d323902ec006f7b1383ddc28504d4bbae0f84071932784574c59f3d078db56946552f26be05c48b9f833ab32fc672d72b97aa9d28913e5b264c06ef36653a9badd1e7c"
+        ],
+        [
+          "a1b2895ef9a609ed9c302319d09be09b2667bd273da6f9fcfa0ae06380de6caa0f1e2d3c4b5a69788796a5b4c3d2e1f026f314f0c815bbf452c93937a76f6301e046dc863a6b627614343df72bca52d1",
+          "676ce3323acdf7617565b50b500bf4e80abf93ea4bb5116ff0b68831c14c695017bd6f0384e58fd1271cb7c54425031a982348a7ef4c9890b6f248ed7b4acea4eed986cfb10e771b520dba0f325627d204dad1dbcd702e3e2dd329b00d328df6d248951ee58aecd8d40c4c21b53324191df2025894ecf8ec30c2e7c35ac18d96e64b16afd82950534bd9d012f1ac4c82a283da1de49da9e5eb4a11a9620ba6695bf855c6ab36e50ea5d431006acdcd06a77fcade249b915a0efb848b4259e040c6450db8dc5ffa634431cba0e561085ff9f00bd53277f1f9ca18b2fde003d5103f04ee8148bbce10068da2bc65abd9bdbbe71484b3f5daaa6302c74168906cbb79ca4b945b392c5234e44ff02f49a5789c1e3ae167de60e83c86694334257b5635e61ba3209876131b30c1a3746f33bf4cbdc22c99a2b7d6de8d62c38842c48d7352ad2214770eac4cde92a049fceb861e297f890d5a89e6c07c768c6c6b82cebdad965a0fa8d9b5de94dca96d09fc4dc044c384aa4d4b7af1de2181472cc82d"
+        ],
+        [
+          "b2d45eaff0018ec1aecdbe7cacaff42023817ce0e3a1c2a0a4eafd2b4bf7f6260f1e2d3c4b5a69788796a5b4c3d2e1f0972080f96288248a1472a4c84cac3a764f8b7236a903b0de7fb72e149d9eea8c",
+          "7a88fd5a0300e963c92feeb42231b6f5d9e391c601822fee367a67f50c5bb92d2c0bba2a7b273bade5cfda39609588e17d8fad2114086e9125c06c9aa61ea112b5c21ca2e90979ff47730bd6b09a41b4477f191b7c32293761f3bc3b859a4ae9b7b509f24e9e8beb04f1d977729be8948a05a9f4105cee889f93a0bb5f90b4b5302c00fc8e27d311c7a3f2340bb18f9ebac44422cde8e5f912c7251cc4b0a561e30e5cf68600decdc340fa033f08085d9ec1af60256f85648ee79540f881747fb51aeb7e30b462e33521b566d3e11d772f9774ee52ce9746e2217375e1277fb5622ee6e2fdb1093b22ce07a14b0390e092b2aad1f3d1f29a4f7c389736c0d43fc7c46b5f9066b80a5940f8b0ef65f715f0a1a67d4134df423c57476a5c35b893005533ec22a965b12a6bb0ee2cd779d4c0587618265884f6d9e956eaf7c45d87b28d3e59c6852edb5c101a5c3027410a0a20f99d5ddd28601dec9c1f800dc2eb89d4fa9c9b93b829053d9ecb551625096d190a3eeef1e66fadd4bcc2bf8ff1f8"
+        ]
+      ],
+      "quorum": {
+        "forced": null,
+        "met": true,
+        "min_attendance": null,
+        "required": 4
+      },
+      "result": {
+        "abstain": 1,
+        "against": 1,
+        "base": 5,
+        "blank": 1,
+        "cast": 5,
+        "for": 3,
+        "outcome": "approved"
+      },
+      "roll_call_hash": null,
+      "rules": {
+        "electorate_filter": null,
+        "method": "yes_no",
+        "min_attendance": null,
+        "mode": "secret",
+        "params": {
+          "base": "cast",
+          "rule": "simple"
+        },
+        "profile": {
+          "hash": "4d7c5059d6643531b085ef2e23b20dae3bb0d557e73c04d0a695d17a8765e616",
+          "id": "example",
+          "version": "0.1.0"
+        },
+        "quorum": [
+          1,
+          3
+        ],
+        "timing": "live"
+      },
+      "rules_hash": "731b781bf7e62d7583d035c2a76fb2ae6d198a4ef8842e50bde121ac92b934e1",
+      "status": "closed",
+      "tallies": {
+        "q": {
+          "abstain": 1,
+          "against": 1,
+          "blank": 1,
+          "for": 3
+        }
+      },
+      "title": "Example: approval of the minutes",
+      "type": "board",
+      "version": 1,
+      "voting_id": "0f1e2d3c4b5a69788796a5b4c3d2e1f0"
+    },
+    "chain": {
+      "records": [
+        {
+          "board": "769cb390b221a6423f57eeba978f65aae1e8af448df14ab89b4661787deda366",
+          "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+          "path": "example.board.json",
+          "record_hash": "1ad0e8bd24b967034df70f02ace06051e10b2aafc320171f1882fb7a14684b80"
+        }
+      ],
+      "type": "chain",
+      "version": 1
+    }
+  },
+  "expected": {
+    "error": "duplicate_token"
+  }
+}

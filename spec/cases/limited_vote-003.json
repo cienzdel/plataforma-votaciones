@@ -1,0 +1,78 @@
+{
+  "id": "limited_vote-003",
+  "kind": "method",
+  "title": "One seat is plurality",
+  "explanation": "One seat, one mark: the most voted wins even without a majority.",
+  "input": {
+    "method": "limited_vote",
+    "params": {
+      "candidates": [
+        "c1",
+        "c2",
+        "c3"
+      ],
+      "seats": 1,
+      "minimum": 0
+    },
+    "tallies": {
+      "c1": {
+        "marked": 10,
+        "unmarked": 20
+      },
+      "c2": {
+        "marked": 12,
+        "unmarked": 18
+      },
+      "c3": {
+        "marked": 6,
+        "unmarked": 24
+      },
+      "status": {
+        "marked": 28,
+        "blank": 2,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c1",
+      "c2",
+      "c3"
+    ]
+  },
+  "expected": {
+    "k": 1,
+    "ranking": [
+      {
+        "cand": "c2",
+        "votes": 12
+      },
+      {
+        "cand": "c1",
+        "votes": 10
+      },
+      {
+        "cand": "c3",
+        "votes": 6
+      }
+    ],
+    "elected": [
+      "c2"
+    ],
+    "substitutes": [
+      "c1",
+      "c3"
+    ],
+    "vacant_seats": 0,
+    "marked_ballots": 28,
+    "blank": 2,
+    "abstain": 0
+  }
+}

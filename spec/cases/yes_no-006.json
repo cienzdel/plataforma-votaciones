@@ -1,0 +1,38 @@
+{
+  "id": "yes_no-006",
+  "kind": "method",
+  "title": "Censure approved",
+  "explanation": "Base is present plus proxies: 30 + 4 = 34. 18 for is more than half of 34.",
+  "input": {
+    "method": "yes_no",
+    "params": {
+      "base": "present_plus_proxies",
+      "rule": "absolute"
+    },
+    "tallies": {
+      "q": {
+        "for": 18,
+        "against": 10,
+        "blank": 2,
+        "abstain": 4
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 4,
+      "rights": 34
+    }
+  },
+  "expected": {
+    "for": 18,
+    "against": 10,
+    "blank": 2,
+    "abstain": 4,
+    "cast": 30,
+    "base": 34,
+    "outcome": "approved"
+  }
+}

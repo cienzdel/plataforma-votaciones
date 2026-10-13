@@ -1,0 +1,51 @@
+{
+  "id": "single_winner-011",
+  "kind": "method",
+  "title": "Repetition resolves the tie",
+  "explanation": "Repeated vote between c2 and c3 for 1 spot: c2 goes to the run-off.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "person",
+      "attempt": 1,
+      "candidates": [
+        "c2",
+        "c3"
+      ],
+      "stage": "qualify",
+      "spots": 1
+    },
+    "tallies": {
+      "choice": {
+        "c2": 14,
+        "c3": 12,
+        "blank": 1,
+        "against_all": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 27,
+    "tallies": {
+      "c2": 14,
+      "c3": 12,
+      "blank": 1,
+      "against_all": 0
+    },
+    "outcome": "qualified",
+    "qualified": [
+      "c2"
+    ]
+  }
+}

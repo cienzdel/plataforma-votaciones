@@ -1,0 +1,14 @@
+{
+  "id": "assent-002",
+  "kind": "assent_deadline",
+  "title": "Deadline day is the switch to summer time",
+  "explanation": "Sent 26 March 2027; 28 March is the DST change, so 23:59 Madrid is 21:59 UTC.",
+  "input": {
+    "sent_at": "2027-03-26T11:00:00Z",
+    "timezone": "Europe/Madrid",
+    "min_days": 2
+  },
+  "expected": {
+    "min_closes_at": "2027-03-28T21:59:00Z"
+  }
+}

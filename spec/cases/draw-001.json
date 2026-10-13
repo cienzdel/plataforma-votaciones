@@ -1,0 +1,33 @@
+{
+  "id": "draw-001",
+  "kind": "draw",
+  "title": "Tie-break order of five candidates",
+  "explanation": "Real quicknet round 33026212. Items are sorted before shuffling, so the input order does not matter.",
+  "input": {
+    "seed": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "commitment": "9a17b4e8b0e2ac3a1c8208333da0baba4e2c844122ed450c23a453bbea47f30d",
+    "drand": {
+      "round": 33026212,
+      "signature": "9791658769c0476a1f88d6b08366504f486ce0a883e4fb17e19b666f39e34f138bb4c480d84f57378d5e9d6694996f92"
+    },
+    "items": [
+      "c5",
+      "c1",
+      "c4",
+      "c2",
+      "c3"
+    ]
+  },
+  "expected": {
+    "randomness": "da7543e48323e62037146cc0c15edc6e131ccdaab49203bb6b1778ececd3921c",
+    "sigma": "41fe7bf14d729afb210e44de19faf7161e098ec56e05a57730bf4edf76a804a3",
+    "order": [
+      "c3",
+      "c1",
+      "c5",
+      "c4",
+      "c2"
+    ],
+    "prng_blocks": 4
+  }
+}

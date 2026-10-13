@@ -1,0 +1,13 @@
+{
+  "id": "round-001",
+  "kind": "round",
+  "title": "First drand round at or after 1692803368",
+  "explanation": "round_at(t) = ceil((t - genesis) / 3) + 1.",
+  "input": {
+    "t": 1692803368
+  },
+  "expected": {
+    "round": 2,
+    "round_time": 1692803370
+  }
+}

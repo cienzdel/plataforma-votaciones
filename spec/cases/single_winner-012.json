@@ -1,0 +1,54 @@
+{
+  "id": "single_winner-012",
+  "kind": "method",
+  "title": "Tie persists after the repetition",
+  "explanation": "After 1 repetition the tie persists, so a draw decides.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "person",
+      "attempt": 1,
+      "candidates": [
+        "c2",
+        "c3"
+      ],
+      "stage": "qualify",
+      "spots": 1
+    },
+    "tallies": {
+      "choice": {
+        "c2": 13,
+        "c3": 13,
+        "blank": 1,
+        "against_all": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 27,
+    "tallies": {
+      "c2": 13,
+      "c3": 13,
+      "blank": 1,
+      "against_all": 0
+    },
+    "outcome": "draw_required",
+    "qualified": [],
+    "tied": [
+      "c2",
+      "c3"
+    ],
+    "spots": 1
+  }
+}

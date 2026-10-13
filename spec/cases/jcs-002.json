@@ -1,0 +1,17 @@
+{
+  "id": "jcs-002",
+  "kind": "jcs",
+  "title": "Non-ASCII text is written literally",
+  "explanation": "Canonical JSON under the restricted profile of formats.md section 1.3.",
+  "input": {
+    "value": {
+      "name": "Peña Núñez · Ciències ✓",
+      "title": "Elección de vocalías"
+    }
+  },
+  "expected": {
+    "jcs_utf8_hex": "7b226e616d65223a225065c3b161204ec3bac3b1657a20c2b7204369c3a86e6369657320e29c93222c227469746c65223a22456c65636369c3b36e20646520766f63616cc3ad6173227d",
+    "jcs_text": "{\"name\":\"Peña Núñez · Ciències ✓\",\"title\":\"Elección de vocalías\"}",
+    "hash": "877987b21d916042d7e07388a2a01a3f5a99e38cdece145f2340ae0fd2ba8c7a"
+  }
+}

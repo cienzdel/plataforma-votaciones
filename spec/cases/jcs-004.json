@@ -1,0 +1,17 @@
+{
+  "id": "jcs-004",
+  "kind": "jcs",
+  "title": "Large safe integer",
+  "explanation": "Canonical JSON under the restricted profile of formats.md section 1.3.",
+  "input": {
+    "value": {
+      "n": 9007199254740991,
+      "m": -9007199254740991
+    }
+  },
+  "expected": {
+    "jcs_utf8_hex": "7b226d223a2d393030373139393235343734303939312c226e223a393030373139393235343734303939317d",
+    "jcs_text": "{\"m\":-9007199254740991,\"n\":9007199254740991}",
+    "hash": "3f54c80abdfbc38f08ed5654622eea6e7d7e58cbac36cf5a0670c8aeb054703d"
+  }
+}

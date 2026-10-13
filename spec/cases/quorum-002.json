@@ -1,0 +1,28 @@
+{
+  "id": "quorum-002",
+  "kind": "quorum",
+  "title": "First call, one short",
+  "explanation": "45 members need 15 present at first call; 14 is not enough.",
+  "input": {
+    "rules": {
+      "quorum": [
+        1,
+        3
+      ],
+      "min_attendance": null
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 14,
+      "members": 45,
+      "present": 14,
+      "proxies": 0,
+      "rights": 14
+    }
+  },
+  "expected": {
+    "required": 15,
+    "met": false,
+    "min_attendance": null
+  }
+}

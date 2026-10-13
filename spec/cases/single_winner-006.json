@@ -1,0 +1,51 @@
+{
+  "id": "single_winner-006",
+  "kind": "method",
+  "title": "Two candidates, blanks prevent a majority",
+  "explanation": "28 cast and 14 is exactly half: no absolute majority, so the same two go to a run-off.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "person",
+      "attempt": 0,
+      "candidates": [
+        "c1",
+        "c2"
+      ],
+      "stage": "first"
+    },
+    "tallies": {
+      "choice": {
+        "c1": 14,
+        "c2": 10,
+        "blank": 4,
+        "against_all": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 28,
+    "tallies": {
+      "c1": 14,
+      "c2": 10,
+      "blank": 4,
+      "against_all": 0
+    },
+    "outcome": "runoff",
+    "qualified": [
+      "c1",
+      "c2"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+# Changelog
+
+Todos los cambios relevantes se documentan aquí · All notable changes are documented here.
+
+El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el proyecto usa [SemVer](https://semver.org/lang/es/).
+
+## [Unreleased]
+
+### Added
+- Planning documents: plan, architecture decision records and threat model (`PLAN/`).
+- Documentation skeleton in Spanish and English (`README`, `docs/`).
+- Licences (EUPL-1.2 for code, CC BY-SA 4.0 for documentation), security policy, contributing guide, code of conduct, issue and pull request templates.
+- H1 proof-of-concept results (`PLAN/h1-pruebas-de-concepto.md`): drand quicknet parameters, VM billing, RSA-3072 performance and GitHub Pages latency; guide to test Gmail API with the council's account.
+- Normative specification draft 0.1 in English (`spec/`): formats, protocol, counting methods and verifiable draws, plus a corpus of 87 cases including complete bulletin boards with real RSA-3072 blind signatures and tampered copies.
+- pnpm workspace and `packages/core` (milestone H3): canonical JSON, quorum, the four counting methods, assent deadlines, verifiable draws, hash chain, ballot cells and universal board verification. Passes the whole corpus with 100% branch coverage and property-based tests.
+
+### Changed
+- The server's blind signature uses OpenSSL (`node:crypto`) instead of the JavaScript big-integer code in blindrsa-ts, which took ~0.9 s per signature (ADR-0002).
+- Canonical JSON member names may contain `-` and `@`, which tallies keyed by ids and cell keys need (`spec/formats.md` §1.3). No hash of the corpus changes.
+- The drand round of a tie-break draw is fixed in public before it exists, instead of being derived from the closing time reported by the server (ADR-0015).

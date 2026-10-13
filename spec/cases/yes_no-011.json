@@ -1,0 +1,38 @@
+{
+  "id": "yes_no-011",
+  "kind": "method",
+  "title": "Absolute majority of all members, not reached",
+  "explanation": "22 is less than half of 45 (22.5).",
+  "input": {
+    "method": "yes_no",
+    "params": {
+      "base": "members",
+      "rule": "absolute"
+    },
+    "tallies": {
+      "q": {
+        "for": 22,
+        "against": 2,
+        "blank": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "for": 22,
+    "against": 2,
+    "blank": 0,
+    "abstain": 0,
+    "cast": 24,
+    "base": 45,
+    "outcome": "rejected"
+  }
+}

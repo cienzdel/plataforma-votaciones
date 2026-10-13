@@ -1,0 +1,48 @@
+{
+  "id": "single_winner-013",
+  "kind": "method",
+  "title": "Run-off winner",
+  "explanation": "In the run-off the most voted wins.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "person",
+      "attempt": 0,
+      "candidates": [
+        "c1",
+        "c2"
+      ],
+      "stage": "runoff"
+    },
+    "tallies": {
+      "choice": {
+        "c1": 15,
+        "c2": 13,
+        "blank": 0,
+        "against_all": 2,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 30,
+    "tallies": {
+      "c1": 15,
+      "c2": 13,
+      "blank": 0,
+      "against_all": 2
+    },
+    "outcome": "elected",
+    "elected": "c1"
+  }
+}

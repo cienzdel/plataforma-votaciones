@@ -1,0 +1,14 @@
+{
+  "id": "assent-003",
+  "kind": "assent_deadline",
+  "title": "UTC and Madrid dates differ",
+  "explanation": "Sent 4 May 2027 at 22:30 UTC, which is already 5 May 00:30 in Madrid: the count starts on 5 May.",
+  "input": {
+    "sent_at": "2027-05-04T22:30:00Z",
+    "timezone": "Europe/Madrid",
+    "min_days": 2
+  },
+  "expected": {
+    "min_closes_at": "2027-05-07T21:59:00Z"
+  }
+}

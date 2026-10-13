@@ -1,0 +1,78 @@
+{
+  "id": "posts-005",
+  "kind": "method",
+  "title": "Full tie, the drawn order decides",
+  "explanation": "Same for and against; c2 comes first in the drawn order.",
+  "input": {
+    "method": "posts",
+    "params": {
+      "posts": [
+        "comms"
+      ],
+      "candidates": [
+        {
+          "id": "c1",
+          "preferences": [
+            "comms"
+          ]
+        },
+        {
+          "id": "c2",
+          "preferences": [
+            "comms"
+          ]
+        }
+      ]
+    },
+    "tallies": {
+      "c1@comms": {
+        "for": 20,
+        "against": 5,
+        "abstain": 5
+      },
+      "c2@comms": {
+        "for": 20,
+        "against": 5,
+        "abstain": 5
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c2",
+      "c1"
+    ]
+  },
+  "expected": {
+    "assignment": {
+      "comms": "c2"
+    },
+    "ranking": {
+      "comms": [
+        {
+          "cand": "c2",
+          "for": 20,
+          "against": 5,
+          "abstain": 5,
+          "eligible": true
+        },
+        {
+          "cand": "c1",
+          "for": 20,
+          "against": 5,
+          "abstain": 5,
+          "eligible": true
+        }
+      ]
+    },
+    "unassigned": [
+      "c1"
+    ]
+  }
+}

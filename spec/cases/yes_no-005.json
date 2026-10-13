@@ -1,0 +1,38 @@
+{
+  "id": "yes_no-005",
+  "kind": "method",
+  "title": "Absolute majority of votes cast, abstentions do not count",
+  "explanation": "15 cast (8+4+3); 8 is more than half of 15. The 10 abstentions are ignored.",
+  "input": {
+    "method": "yes_no",
+    "params": {
+      "base": "cast",
+      "rule": "absolute"
+    },
+    "tallies": {
+      "q": {
+        "for": 8,
+        "against": 4,
+        "blank": 3,
+        "abstain": 10
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "for": 8,
+    "against": 4,
+    "blank": 3,
+    "abstain": 10,
+    "cast": 15,
+    "base": 15,
+    "outcome": "approved"
+  }
+}

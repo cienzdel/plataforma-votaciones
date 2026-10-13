@@ -1,0 +1,34 @@
+{
+  "id": "quorum-005",
+  "kind": "quorum",
+  "title": "Censure needs half the members present",
+  "explanation": "Half of 45 is 22.5, rounded up to 23; quorum is met but minimum attendance is not.",
+  "input": {
+    "rules": {
+      "quorum": [
+        1,
+        3
+      ],
+      "min_attendance": [
+        1,
+        2
+      ]
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 22,
+      "members": 45,
+      "present": 22,
+      "proxies": 0,
+      "rights": 22
+    }
+  },
+  "expected": {
+    "required": 15,
+    "met": true,
+    "min_attendance": {
+      "required": 23,
+      "met": false
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "assent-006",
+  "kind": "assent_outcome",
+  "title": "One objection left",
+  "explanation": "Two objections, one withdrawn before the deadline: one remains, so the proposal goes to the next plenary.",
+  "input": {
+    "objections_at_close": 1
+  },
+  "expected": {
+    "outcome": "next_plenary"
+  }
+}

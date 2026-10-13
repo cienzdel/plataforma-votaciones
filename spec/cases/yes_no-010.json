@@ -1,0 +1,38 @@
+{
+  "id": "yes_no-010",
+  "kind": "method",
+  "title": "Absolute majority of all members",
+  "explanation": "Base is the 45 members, present or not: 23 is more than half of 45.",
+  "input": {
+    "method": "yes_no",
+    "params": {
+      "base": "members",
+      "rule": "absolute"
+    },
+    "tallies": {
+      "q": {
+        "for": 23,
+        "against": 5,
+        "blank": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "for": 23,
+    "against": 5,
+    "blank": 0,
+    "abstain": 0,
+    "cast": 28,
+    "base": 45,
+    "outcome": "approved"
+  }
+}

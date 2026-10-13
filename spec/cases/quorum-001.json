@@ -1,0 +1,28 @@
+{
+  "id": "quorum-001",
+  "kind": "quorum",
+  "title": "First call, exactly one third",
+  "explanation": "45 members: one third is 15, so 15 present is enough.",
+  "input": {
+    "rules": {
+      "quorum": [
+        1,
+        3
+      ],
+      "min_attendance": null
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 15,
+      "members": 45,
+      "present": 15,
+      "proxies": 0,
+      "rights": 15
+    }
+  },
+  "expected": {
+    "required": 15,
+    "met": true,
+    "min_attendance": null
+  }
+}

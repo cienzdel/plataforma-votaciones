@@ -1,0 +1,38 @@
+{
+  "id": "yes_no-004",
+  "kind": "method",
+  "title": "Absolute majority of votes cast, blanks count",
+  "explanation": "21 votes cast (10+5+6). 10 is not more than half of 21; abstentions are not cast.",
+  "input": {
+    "method": "yes_no",
+    "params": {
+      "base": "cast",
+      "rule": "absolute"
+    },
+    "tallies": {
+      "q": {
+        "for": 10,
+        "against": 5,
+        "blank": 6,
+        "abstain": 8
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "for": 10,
+    "against": 5,
+    "blank": 6,
+    "abstain": 8,
+    "cast": 21,
+    "base": 21,
+    "outcome": "rejected"
+  }
+}

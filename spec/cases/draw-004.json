@@ -1,0 +1,21 @@
+{
+  "id": "draw-004",
+  "kind": "draw_error",
+  "title": "Revealed seed does not match the commitment",
+  "explanation": "The commitment was made with another seed; the draw MUST be rejected.",
+  "input": {
+    "seed": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "commitment": "54eca9d374cf3e63c4a51dc547852e6cbaa76e293ebdc0b3676eda9298b3592b",
+    "drand": {
+      "round": 33026212,
+      "signature": "9791658769c0476a1f88d6b08366504f486ce0a883e4fb17e19b666f39e34f138bb4c480d84f57378d5e9d6694996f92"
+    },
+    "items": [
+      "c1",
+      "c2"
+    ]
+  },
+  "expected": {
+    "error": "commitment_mismatch"
+  }
+}

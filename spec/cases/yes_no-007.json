@@ -1,0 +1,38 @@
+{
+  "id": "yes_no-007",
+  "kind": "method",
+  "title": "Censure with exactly half",
+  "explanation": "17 is exactly half of 34, not more than half: rejected.",
+  "input": {
+    "method": "yes_no",
+    "params": {
+      "base": "present_plus_proxies",
+      "rule": "absolute"
+    },
+    "tallies": {
+      "q": {
+        "for": 17,
+        "against": 12,
+        "blank": 1,
+        "abstain": 4
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 4,
+      "rights": 34
+    }
+  },
+  "expected": {
+    "for": 17,
+    "against": 12,
+    "blank": 1,
+    "abstain": 4,
+    "cast": 30,
+    "base": 34,
+    "outcome": "rejected"
+  }
+}

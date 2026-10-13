@@ -1,0 +1,129 @@
+{
+  "id": "posts-009",
+  "kind": "method",
+  "title": "Chain of displacements across three posts",
+  "explanation": "c1 takes a, pushing c2 to b, which pushes c3 to c.",
+  "input": {
+    "method": "posts",
+    "params": {
+      "posts": [
+        "a",
+        "b",
+        "c"
+      ],
+      "candidates": [
+        {
+          "id": "c1",
+          "preferences": [
+            "a"
+          ]
+        },
+        {
+          "id": "c2",
+          "preferences": [
+            "a",
+            "b"
+          ]
+        },
+        {
+          "id": "c3",
+          "preferences": [
+            "b",
+            "c"
+          ]
+        }
+      ]
+    },
+    "tallies": {
+      "c1@a": {
+        "for": 25,
+        "against": 1,
+        "abstain": 4
+      },
+      "c2@a": {
+        "for": 20,
+        "against": 2,
+        "abstain": 8
+      },
+      "c2@b": {
+        "for": 24,
+        "against": 2,
+        "abstain": 4
+      },
+      "c3@b": {
+        "for": 18,
+        "against": 3,
+        "abstain": 9
+      },
+      "c3@c": {
+        "for": 17,
+        "against": 3,
+        "abstain": 10
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c3",
+      "c2",
+      "c1"
+    ]
+  },
+  "expected": {
+    "assignment": {
+      "a": "c1",
+      "b": "c2",
+      "c": "c3"
+    },
+    "ranking": {
+      "a": [
+        {
+          "cand": "c1",
+          "for": 25,
+          "against": 1,
+          "abstain": 4,
+          "eligible": true
+        },
+        {
+          "cand": "c2",
+          "for": 20,
+          "against": 2,
+          "abstain": 8,
+          "eligible": true
+        }
+      ],
+      "b": [
+        {
+          "cand": "c2",
+          "for": 24,
+          "against": 2,
+          "abstain": 4,
+          "eligible": true
+        },
+        {
+          "cand": "c3",
+          "for": 18,
+          "against": 3,
+          "abstain": 9,
+          "eligible": true
+        }
+      ],
+      "c": [
+        {
+          "cand": "c3",
+          "for": 17,
+          "against": 3,
+          "abstain": 10,
+          "eligible": true
+        }
+      ]
+    },
+    "unassigned": []
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "quorum-006",
+  "kind": "quorum",
+  "title": "Reform needs a third present, exact",
+  "explanation": "A third of 60 is exactly 20.",
+  "input": {
+    "rules": {
+      "quorum": [
+        1,
+        4
+      ],
+      "min_attendance": [
+        1,
+        3
+      ]
+    },
+    "counters": {
+      "session_members": 60,
+      "session_present": 20,
+      "members": 60,
+      "present": 20,
+      "proxies": 0,
+      "rights": 20
+    }
+  },
+  "expected": {
+    "required": 15,
+    "met": true,
+    "min_attendance": {
+      "required": 20,
+      "met": true
+    }
+  }
+}

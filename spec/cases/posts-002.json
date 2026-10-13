@@ -1,0 +1,106 @@
+{
+  "id": "posts-002",
+  "kind": "method",
+  "title": "Preference decides, and the rejected candidate moves on",
+  "explanation": "c1 leads both posts and prefers comms. c2 applied to both, prefers comms, loses it to c1 and takes sports.",
+  "input": {
+    "method": "posts",
+    "params": {
+      "posts": [
+        "comms",
+        "sports"
+      ],
+      "candidates": [
+        {
+          "id": "c1",
+          "preferences": [
+            "comms",
+            "sports"
+          ]
+        },
+        {
+          "id": "c2",
+          "preferences": [
+            "comms",
+            "sports"
+          ]
+        }
+      ]
+    },
+    "tallies": {
+      "c1@comms": {
+        "for": 25,
+        "against": 3,
+        "abstain": 2
+      },
+      "c1@sports": {
+        "for": 24,
+        "against": 4,
+        "abstain": 2
+      },
+      "c2@comms": {
+        "for": 20,
+        "against": 6,
+        "abstain": 4
+      },
+      "c2@sports": {
+        "for": 19,
+        "against": 7,
+        "abstain": 4
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c1",
+      "c2"
+    ]
+  },
+  "expected": {
+    "assignment": {
+      "comms": "c1",
+      "sports": "c2"
+    },
+    "ranking": {
+      "comms": [
+        {
+          "cand": "c1",
+          "for": 25,
+          "against": 3,
+          "abstain": 2,
+          "eligible": true
+        },
+        {
+          "cand": "c2",
+          "for": 20,
+          "against": 6,
+          "abstain": 4,
+          "eligible": true
+        }
+      ],
+      "sports": [
+        {
+          "cand": "c1",
+          "for": 24,
+          "against": 4,
+          "abstain": 2,
+          "eligible": true
+        },
+        {
+          "cand": "c2",
+          "for": 19,
+          "against": 7,
+          "abstain": 4,
+          "eligible": true
+        }
+      ]
+    },
+    "unassigned": []
+  }
+}

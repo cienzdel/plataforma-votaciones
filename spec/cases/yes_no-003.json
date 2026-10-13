@@ -1,0 +1,38 @@
+{
+  "id": "yes_no-003",
+  "kind": "method",
+  "title": "Blank votes do not block a simple majority",
+  "explanation": "3 for, 2 against, 20 blank: blanks are cast but simple majority compares only for and against.",
+  "input": {
+    "method": "yes_no",
+    "params": {
+      "base": "cast",
+      "rule": "simple"
+    },
+    "tallies": {
+      "q": {
+        "for": 3,
+        "against": 2,
+        "blank": 20,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "for": 3,
+    "against": 2,
+    "blank": 20,
+    "abstain": 0,
+    "cast": 25,
+    "base": 25,
+    "outcome": "approved"
+  }
+}

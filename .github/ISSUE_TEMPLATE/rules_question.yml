@@ -1,0 +1,17 @@
+name: "⚖️ Interpretación de reglas · Rules interpretation"
+description: "Un caso de recuento o de quorum que crees que se resuelve mal · A counting or quorum case you think is resolved incorrectly"
+labels: ["rules"]
+body:
+  - type: textarea
+    id: case
+    attributes:
+      label: "Caso (con datos ficticios) · Case (fictitious data)"
+      description: "Votos por opción, presentes, delegados, método y parámetros · Votes per option, present members, proxies, method and parameters"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Resultado esperado y por qué · Expected result and why"
+    validations:
+      required: true

@@ -1,0 +1,78 @@
+{
+  "id": "limited_vote-002",
+  "kind": "method",
+  "title": "Tie for the last seat, drawn order decides",
+  "explanation": "c2 and c3 tie with 15 for the second seat; c3 comes first in the drawn order. No repetition.",
+  "input": {
+    "method": "limited_vote",
+    "params": {
+      "candidates": [
+        "c1",
+        "c2",
+        "c3"
+      ],
+      "seats": 2,
+      "minimum": 0
+    },
+    "tallies": {
+      "c1": {
+        "marked": 20,
+        "unmarked": 10
+      },
+      "c2": {
+        "marked": 15,
+        "unmarked": 15
+      },
+      "c3": {
+        "marked": 15,
+        "unmarked": 15
+      },
+      "status": {
+        "marked": 28,
+        "blank": 0,
+        "abstain": 2
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c3",
+      "c1",
+      "c2"
+    ]
+  },
+  "expected": {
+    "k": 1,
+    "ranking": [
+      {
+        "cand": "c1",
+        "votes": 20
+      },
+      {
+        "cand": "c3",
+        "votes": 15
+      },
+      {
+        "cand": "c2",
+        "votes": 15
+      }
+    ],
+    "elected": [
+      "c1",
+      "c3"
+    ],
+    "substitutes": [
+      "c2"
+    ],
+    "vacant_seats": 0,
+    "marked_ballots": 28,
+    "blank": 0,
+    "abstain": 2
+  }
+}

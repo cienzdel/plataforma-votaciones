@@ -1,0 +1,62 @@
+{
+  "id": "single_winner-009",
+  "kind": "method",
+  "title": "Three tie for second place",
+  "explanation": "c1 goes through; c2, c3 and c4 tie for the other place.",
+  "input": {
+    "method": "single_winner",
+    "params": {
+      "repetitions": 1,
+      "against_all_blocks": false,
+      "subject": "person",
+      "attempt": 0,
+      "candidates": [
+        "c1",
+        "c2",
+        "c3",
+        "c4"
+      ],
+      "stage": "first"
+    },
+    "tallies": {
+      "choice": {
+        "c1": 10,
+        "c2": 5,
+        "c3": 5,
+        "c4": 5,
+        "blank": 3,
+        "against_all": 0,
+        "abstain": 0
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    }
+  },
+  "expected": {
+    "cast": 28,
+    "tallies": {
+      "c1": 10,
+      "c2": 5,
+      "c3": 5,
+      "c4": 5,
+      "blank": 3,
+      "against_all": 0
+    },
+    "outcome": "repeat",
+    "qualified": [
+      "c1"
+    ],
+    "tied": [
+      "c2",
+      "c3",
+      "c4"
+    ],
+    "spots": 1
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "id": "limited_vote-004",
+  "kind": "method",
+  "title": "One seat, tie",
+  "explanation": "c1 and c2 tie; c2 comes first in the drawn order.",
+  "input": {
+    "method": "limited_vote",
+    "params": {
+      "candidates": [
+        "c1",
+        "c2"
+      ],
+      "seats": 1,
+      "minimum": 0
+    },
+    "tallies": {
+      "c1": {
+        "marked": 11,
+        "unmarked": 19
+      },
+      "c2": {
+        "marked": 11,
+        "unmarked": 19
+      },
+      "status": {
+        "marked": 22,
+        "blank": 4,
+        "abstain": 4
+      }
+    },
+    "counters": {
+      "session_members": 45,
+      "session_present": 30,
+      "members": 45,
+      "present": 30,
+      "proxies": 0,
+      "rights": 30
+    },
+    "tiebreak_order": [
+      "c2",
+      "c1"
+    ]
+  },
+  "expected": {
+    "k": 1,
+    "ranking": [
+      {
+        "cand": "c2",
+        "votes": 11
+      },
+      {
+        "cand": "c1",
+        "votes": 11
+      }
+    ],
+    "elected": [
+      "c2"
+    ],
+    "substitutes": [
+      "c1"
+    ],
+    "vacant_seats": 0,
+    "marked_ballots": 22,
+    "blank": 4,
+    "abstain": 4
+  }
+}

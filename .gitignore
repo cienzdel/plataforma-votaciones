@@ -1,0 +1,12 @@
+# Material de contexto privado: NO publicar
+_contexto/
+PROMPT_INICIAL.md
+
+# Dependencias y resultados de pruebas
+node_modules/
+coverage/
+
+# Entornos de Python
+.venv/
+__pycache__/
+.pytest_cache/

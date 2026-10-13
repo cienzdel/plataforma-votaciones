@@ -1,0 +1,14 @@
+{
+  "id": "cell_id-004",
+  "kind": "cell_id",
+  "title": "Cell id for cell key 'status'",
+  "explanation": "id_c = H(tag('pv/cell/v1') || s || voting_id || utf8(c)).",
+  "input": {
+    "s": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "voting_id": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+    "cell": "status"
+  },
+  "expected": {
+    "id": "92dccacca230ff0b4e98889bcad6141171376a392e8e3a4db1a611ae59299728"
+  }
+}
