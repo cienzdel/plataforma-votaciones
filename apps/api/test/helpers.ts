@@ -6,6 +6,8 @@ import type { Deps } from "../src/context.ts";
 import { openDb } from "../src/db/index.ts";
 import { MemoryMailer } from "../src/mail/index.ts";
 import { parseProfile } from "../src/profile.ts";
+import { MemoryPublisher } from "../src/publisher.ts";
+import { receptionApp } from "../src/reception.ts";
 
 export const PROFILE = parseProfile(JSON.parse(readFileSync(new URL("../../../profiles/example.json", import.meta.url), "utf8")));
 export const FIRST = { email: "mesa@example.org", name: "Persona Mesa" };
@@ -15,12 +17,17 @@ export function census(n: number, degree = (i: number) => (i % 2 === 0 ? "bio" :
   return ["name,email,degrees", `${FIRST.name},${FIRST.email},bio`, ...rows].join("\n");
 }
 
-export function setup() {
+export function setup(trace?: (sql: string) => void) {
   const clock = { t: Date.UTC(2027, 2, 10, 17, 0) };
   const mailer = new MemoryMailer();
-  const deps: Deps = { db: openDb(":memory:"), mailer, profile: PROFILE, now: () => clock.t, webOrigin: "https://vote.example.org" };
+  const publisher = new MemoryPublisher();
+  const deps: Deps = {
+    db: openDb(":memory:", trace), mailer, profile: PROFILE, now: () => clock.t, webOrigin: "https://vote.example.org",
+    publisher, masterKey: Buffer.alloc(32, 7),
+  };
   ensureFirstOfficial(deps, FIRST);
   const app = createApp(deps);
+  const reception = receptionApp(deps);
 
   async function call(method: string, path: string, body?: unknown, token?: string) {
     const headers: Record<string, string> = { "content-type": "application/json" };
@@ -53,5 +60,5 @@ export function setup() {
     return { official, members, byEmail };
   }
 
-  return { deps, app, clock, mailer, call, lastCode, login, withCensus };
+  return { deps, app, reception, clock, mailer, publisher, call, lastCode, login, withCensus };
 }

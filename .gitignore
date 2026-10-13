@@ -13,3 +13,6 @@ coverage/
 .venv/
 __pycache__/
 .pytest_cache/
+
+# Datos publicados en local
+.data/

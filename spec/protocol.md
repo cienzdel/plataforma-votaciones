@@ -25,9 +25,9 @@ These apply to every component on the voting machine, including the TLS proxy ([
 
 ## 3. Creating a voting
 
-1. The officials define: title, method and parameters ([`methods.md`](methods.md)), candidates and posts with their ids, `electorate_filter`, `mode`, `timing`. The server assigns `voting_id` (16 random bytes) and builds `rules` and `rules_hash` ([`formats.md`](formats.md) §4).
+1. The officials define: title, method and parameters ([`methods.md`](methods.md)), candidates and posts with their ids, `electorate_filter`, `mode`, `timing`. The server assigns `voting_id` (16 random bytes). `rules` and `rules_hash` ([`formats.md`](formats.md) §4) are built when the voting opens (§4), with the quorum of the call in force.
 2. If the method needs a tie-break order, the officials' browser creates a seed and sends the server only its `commitment` ([`draws.md`](draws.md) §2).
-3. From now on the voting cannot be edited. It can only be annulled, with a reason that is published.
+3. From now on the voting cannot be edited; what the officials defined is the only input to the rules. It can only be annulled, with a reason that is published.
 
 ## 4. Opening
 

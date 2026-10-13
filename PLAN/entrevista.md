@@ -258,3 +258,12 @@ Formato: `[Bloque N] Decisión — Justificación`. Las decisiones aplazadas se 
 - [H5] El código TypeScript se ejecuta directamente con Node (eliminación de tipos), sin paso de compilación; los imports llevan extensión `.ts`. — Un artefacto menos que construir y comprobar en la VM.
 - [H5] Interpretaciones de las delegaciones que conviene confirmar con la mesa: no se admiten cadenas (quien ha delegado no puede recibir delegaciones y quien tiene delegaciones no puede delegar); no puede delegar quien está presente; si quien delegó llega y vuelve a irse, puede registrar una delegación nueva. — El reglamento no trata estos casos y una cadena haría difícil saber quién vota por quién.
 - [H5] Solo puede haber una sesión abierta a la vez, y la importación del censo sustituye la lista completa: quien no aparece se desactiva, nunca se borra. No se puede desactivar a nadie de la mesa. — Evita errores de la mesa y conserva las referencias del registro interno.
+
+## Hito H6 (2026-10-13)
+
+- [H6] Las reglas efectivas se fijan al abrir la votación, no al crearla, porque incluyen el quorum de la convocatoria vigente. — Nada se publica antes de abrir, así que no cambia lo que se puede verificar; corrige una incoherencia de la especificación.
+- [H6] En H6 solo se admiten `yes_no` y `single_winner`; vocalías y voto limitado necesitan el sorteo de drand y llegan en H8 con el resto del catálogo. — Así el orden de los hitos del plan se mantiene.
+- [H6] La clave privada de cada votación se guarda cifrada con AES-256-GCM (OpenSSL) bajo la clave maestra del entorno, con el id de la votación como dato asociado. — Sobrevive a un reinicio sin quedar en claro en disco.
+- [H6] Si la publicación en el repositorio de datos falla, la votación queda cerrada con su tablón encadenado y la mesa puede reintentar; los votos agrupados se borran solo tras publicar. — No se pierde nada si GitHub no responde.
+- [H6] Una votación creada pero nunca abierta se anula sin publicar nada, porque no hay aviso de apertura ni papeletas. — Solo se publica lo que llegó a abrirse.
+- [H6] Solo una votación abierta a la vez por sesión. — Simplifica la proyección y evita confusiones al votar.

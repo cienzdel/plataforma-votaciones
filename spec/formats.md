@@ -109,7 +109,7 @@ Validity rules beyond the table, checked by the reception service on each comple
 
 ## 4. Rules
 
-The effective rules of a voting are fixed when it is created and never change.
+The effective rules of a voting are fixed when it opens, because `quorum` depends on the call in force at that moment, and never change afterwards. They are published in the opening notice (§12).
 
 ```json
 {

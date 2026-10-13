@@ -4,6 +4,7 @@ import { authRoutes } from "./auth.ts";
 import { censusRoutes, roleRoutes } from "./census.ts";
 import { HttpError, type Deps } from "./context.ts";
 import { meetingRoutes } from "./meetings.ts";
+import { votingRoutes } from "./votings.ts";
 
 /**
  * The session API. There is no request logger: no IP, user agent, header or time is recorded
@@ -25,5 +26,6 @@ export function createApp(deps: Deps): Hono {
   app.route("/census", censusRoutes(deps));
   app.route("/roles", roleRoutes(deps));
   app.route("/meetings", meetingRoutes(deps));
+  app.route("/votings", votingRoutes(deps));
   return app;
 }
