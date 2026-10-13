@@ -21,7 +21,7 @@ Si en la sala no puedes acceder a tu correo, pide a la mesa un **acceso asistido
 
 1. **Asistencia:** la mesa te marca como presente (también si asistes por videollamada). Solo puedes votar si estás presente cuando se abre la votación.
 2. **Apertura:** cuando la mesa abre una votación, tu navegador pide automáticamente tu credencial anónima. **Mantén la página abierta.**
-3. **Papeleta:** elige tus opciones. Si tienes votos delegados, verás una papeleta por cada uno («Tu voto», «Voto delegado de…») y puedes votar distinto en cada una.
+3. **Papeleta:** elige tus opciones. Si tienes votos delegados, verás una papeleta por cada uno («Tu voto», «Voto delegado 1»…) y puedes votar distinto en cada una.
 4. **Revisión:** antes de enviar verás un resumen. Un voto enviado **no se puede cambiar**.
 5. **Comprobante:** al enviar, se guarda en tu navegador y puedes descargarlo.
 

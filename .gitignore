@@ -16,3 +16,9 @@ __pycache__/
 
 # Datos publicados en local
 .data/
+
+# Compilación y resultados de pruebas de la web
+dist/
+test-results/
+playwright-report/
+

@@ -21,7 +21,7 @@ If you cannot reach your e-mail in the room, ask the officials for **assisted ac
 
 1. **Attendance:** the officials mark you present (also if you attend by video call). You can only vote if you are present when the vote opens.
 2. **Opening:** when the officials open a vote, your browser automatically requests your anonymous credential. **Keep the page open.**
-3. **Ballot:** pick your options. If you hold proxy votes, you will see one ballot per vote ("Your vote", "Proxy vote of…") and you can vote differently on each.
+3. **Ballot:** pick your options. If you hold proxy votes, you will see one ballot per vote ("Your vote", "Proxy vote 1"…) and you can vote differently on each.
 4. **Review:** before sending you will see a summary. A vote that has been sent **cannot be changed**.
 5. **Receipt:** once sent, it is stored in your browser and you can download it.
 

@@ -316,7 +316,8 @@ export async function closeDue(deps: Deps): Promise<void> {
 /** The public view of a voting, plus the caller's rights when they are in the electorate. */
 function view(deps: Deps, v: Voting, memberId: string) {
   const rights = deps.db.select().from(electorateSnapshot).where(and(eq(electorateSnapshot.votingId, v.id), eq(electorateSnapshot.memberId, memberId))).get()?.rights ?? 0;
-  return { id: v.id, title: v.title, status: v.status, opening: v.opening, board: v.board, candidates: v.candidates, my_rights: rights };
+  return { id: v.id, meeting_id: v.meetingId, title: v.title, status: v.status, method: (v.rules as { method: string }).method,
+    params: (v.rules as { params: unknown }).params, opening: v.opening, board: v.board, candidates: v.candidates, my_rights: rights };
 }
 
 export function votingRoutes(deps: Deps): Hono<AuthEnv> {

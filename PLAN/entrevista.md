@@ -267,3 +267,10 @@ Formato: `[Bloque N] Decisión — Justificación`. Las decisiones aplazadas se 
 - [H6] Si la publicación en el repositorio de datos falla, la votación queda cerrada con su tablón encadenado y la mesa puede reintentar; los votos agrupados se borran solo tras publicar. — No se pierde nada si GitHub no responde.
 - [H6] Una votación creada pero nunca abierta se anula sin publicar nada, porque no hay aviso de apertura ni papeletas. — Solo se publica lo que llegó a abrirse.
 - [H6] Solo una votación abierta a la vez por sesión. — Simplifica la proyección y evita confusiones al votar.
+
+## Hito H7 (2026-10-13)
+
+- [H7] La interfaz usa Preact con navegación por ancla (`#/vote`, `#/officials`, `#/projection`) y consulta la API cada pocos segundos, sin WebSockets ni librerías de estado. — Funciona en GitHub Pages sin configuración y cabe holgadamente en el presupuesto de 200 KB.
+- [H7] Las papeletas de los votos delegados se titulan «Voto delegado 1, 2…», sin el nombre de quien delegó. — La foto de presentes solo guarda el número de derechos; mostrar nombres exigiría guardar en la votación qué delegación da cada derecho. Se puede añadir si la mesa lo pide.
+- [H7] La credencial pendiente, la credencial y el voto se guardan en el navegador antes de enviarse. Si el navegador no permite guardar (ventana privada), la interfaz no continúa y lo explica. — Así no se pierde un voto por recargar la página.
+- [H7] Para las pruebas con navegador, la API admite correo y publicación en una carpeta local (`PV_MAIL=directory`, `PV_PUBLISH=directory`), solo para desarrollo. — Permite leer los códigos de acceso sin abrir ningún punto de acceso nuevo en la API.

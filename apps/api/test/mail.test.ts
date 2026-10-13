@@ -38,3 +38,17 @@ describe("profile", () => {
     expect(() => parseProfile(null)).toThrow("type");
   });
 });
+
+describe("directory mailer", () => {
+  it("writes one JSON file per message", async () => {
+    const { mkdtempSync, readdirSync, readFileSync, rmSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const { DirectoryMailer } = await import("../src/mail/index.ts");
+    const dir = mkdtempSync(join(tmpdir(), "pv-mail-"));
+    await new DirectoryMailer(dir).send({ to: "p1@example.org", subject: "s", text: "t" });
+    const files = readdirSync(dir);
+    expect(JSON.parse(readFileSync(join(dir, files[0]!), "utf8"))).toEqual({ to: "p1@example.org", subject: "s", text: "t" });
+    rmSync(dir, { recursive: true });
+  });
+});

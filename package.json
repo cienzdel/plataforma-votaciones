@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "e2e": "pnpm --filter @pv/web e2e"
   },
   "devDependencies": {
     "@types/node": "26.6.5",

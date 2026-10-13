@@ -1,0 +1,26 @@
+{
+  "name": "@pv/web",
+  "version": "0.1.0",
+  "private": true,
+  "license": "EUPL-1.2",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vite build && node scripts/size.ts",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@cloudflare/blindrsa-ts": "0.4.6",
+    "@pv/core": "workspace:*",
+    "preact": "11.0.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.64.0",
+    "@preact/preset-vite": "2.10.6",
+    "vite": "8.3.4"
+  }
+}

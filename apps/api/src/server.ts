@@ -3,7 +3,7 @@
  *
  * - PV_DB: SQLite file. PV_PROFILE: profile JSON. PV_WEB_ORIGIN: URL of the web client.
  * - PV_FIRST_OFFICIAL_EMAIL, PV_FIRST_OFFICIAL_NAME: first `mesa` member (ADR-0025).
- * - PV_MAIL: `smtp`, `gmail` or `memory` (development only), and for each:
+ * - PV_MAIL: `smtp`, `gmail`, `memory` or `directory` (PV_MAIL_DIR; the last two for development only), and for each:
  *   PV_SMTP_HOST, PV_SMTP_PORT, PV_SMTP_USER, PV_SMTP_PASSWORD, PV_MAIL_FROM;
  *   PV_GMAIL_CLIENT_ID, PV_GMAIL_CLIENT_SECRET, PV_GMAIL_REFRESH_TOKEN, PV_MAIL_FROM.
  * - PV_MASTER_KEY: 32 bytes in hex; encrypts the voting private keys at rest.
@@ -18,7 +18,7 @@ import { createApp } from "./app.ts";
 import { ensureFirstOfficial } from "./census.ts";
 import { openDb } from "./db/index.ts";
 import { masterKey } from "./keys.ts";
-import { gmailMailer, MemoryMailer, smtpMailer, type Mailer } from "./mail/index.ts";
+import { DirectoryMailer, gmailMailer, MemoryMailer, smtpMailer, type Mailer } from "./mail/index.ts";
 import { parseProfile } from "./profile.ts";
 import { DirectoryPublisher, GitHubPublisher, type Publisher } from "./publisher.ts";
 import { receptionApp } from "./reception.ts";
@@ -38,8 +38,10 @@ function mailer(): Mailer {
       return gmailMailer({ clientId: env("PV_GMAIL_CLIENT_ID"), clientSecret: env("PV_GMAIL_CLIENT_SECRET"), refreshToken: env("PV_GMAIL_REFRESH_TOKEN"), from: env("PV_MAIL_FROM") });
     case "memory":
       return new MemoryMailer();
+    case "directory":
+      return new DirectoryMailer(env("PV_MAIL_DIR"));
     default:
-      throw new Error("PV_MAIL must be smtp, gmail or memory");
+      throw new Error("PV_MAIL must be smtp, gmail, memory or directory");
   }
 }
 

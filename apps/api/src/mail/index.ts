@@ -2,6 +2,8 @@
  * E-mail transport (ADR-0014): Gmail API with OAuth or generic SMTP, chosen by configuration.
  * Messages never contain voting credentials; login codes are the only secret sent by e-mail.
  */
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import MailComposer from "nodemailer/lib/mail-composer/index.js";
 import nodemailer from "nodemailer";
 
@@ -20,6 +22,20 @@ export class MemoryMailer implements Mailer {
   readonly sent: Message[] = [];
   async send(message: Message): Promise<void> {
     this.sent.push(message);
+  }
+}
+
+/** Writes each message as a JSON file in a folder. For local development and browser tests only. */
+export class DirectoryMailer implements Mailer {
+  readonly dir: string;
+  private n = 0;
+  constructor(dir: string) {
+    this.dir = dir;
+    mkdirSync(dir, { recursive: true });
+  }
+  async send(message: Message): Promise<void> {
+    this.n++;
+    writeFileSync(join(this.dir, `${Date.now()}-${String(this.n).padStart(6, "0")}.json`), JSON.stringify(message));
   }
 }
 

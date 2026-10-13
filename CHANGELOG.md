@@ -16,6 +16,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Independent Python verifier `tools/verify` (milestone H4), written from `spec/`: checks a whole data repository (boards, opening notices, candidates tables, stand-alone draws, assent records, receipts and the chain), including the drand BLS signature. Passes the whole corpus.
 - Base API `apps/api` (milestone H5): login by e-mail code and assisted login, census import from CSV, the `mesa` role with a public log by alias, meetings with first and second call, attendance, proxy votes and the attendance snapshot, e-mail through Gmail API or SMTP. Integration tests on in-memory SQLite.
 - Secret votings in `apps/api` (milestone H6): RSA-3072 keys per voting encrypted at rest, blind signatures with OpenSSL, the attendance snapshot, the opening notice, reception on its own origin without session, time or order, closing with key destruction, the board, the hash chain, publication to the data repository (GitHub or a local folder), notices with the number of credentials issued, and erasure of the grouped ballots. Methods `yes_no` and `single_winner`; the others need draws and arrive later.
+- Web interface `apps/web` (milestone H7):
+  - voter view with anonymous credentials obtained in the browser, one ballot per right, review, downloadable receipt and individual check of the board;
+  - officials' view and projection view;
+  - Spanish and English, about 98 KB against a 200 KB budget;
+  - Playwright test of the full flow with axe (WCAG 2.2 AA) on every screen.
+- E-mail and publication to a local folder, for development and browser tests.
 - Test that reception writes only the ballot and the spent token, with no log, cookie, time or order, and end-to-end test where `tools/verify` accepts the data repository published by the API.
 - Fictitious example profile `profiles/example.json` for development and tests.
 - Layout of the data repository (`spec/formats.md` §9.1) and error codes for stand-alone draws and assent records.
