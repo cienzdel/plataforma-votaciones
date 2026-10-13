@@ -103,7 +103,7 @@ flowchart LR
 - **El cliente no lo sirve el servidor de votos.** La interfaz se compila en GitHub Actions desde el repositorio público, se publica en GitHub Pages con atestación de procedencia y obtiene la URL de la API de un archivo de configuración. Una VM manipulada no puede servir un JavaScript distinto al votante ([ADR-0017](adr/0017-despliegue-vm-efimera-pages.md)).
 - **Núcleo sin E/S.** `packages/core` contiene los métodos de recuento, los umbrales, los sorteos, el formato del tablón y la cadena de hashes como funciones puras. Lo usan la API, la interfaz (para la vista previa y la verificación) y las pruebas.
 - **Módulos separados por propósito.** Emisión y recepción no comparten estado salvo la lista de tokens gastados. La recepción vive en otro subdominio, no acepta sesión y no registra nada. Están en el mismo proceso: separarlos en dos despliegues solo aportaría algo si los operasen personas distintas ([ADR-0004](adr/0004-desacople-emision-envio.md)).
-- **VM efímera.** Se crea antes de un pleno o de un asentimiento a partir de una instantánea y se destruye después. Todo lo público vive en GitHub y sigue disponible con la VM apagada ([ADR-0017](adr/0017-despliegue-vm-efimera-pages.md)).
+- **VM efímera.** Se enciende antes de un pleno o de un asentimiento y se apaga después. Por defecto es una VM gratuita de Oracle Cloud en la UE; si la delegación o la facultad lo financian, una VM de pago de Hetzner, empresa de la UE. Todo lo público vive en GitHub y sigue disponible con la VM apagada ([ADR-0017](adr/0017-despliegue-vm-efimera-pages.md)).
 - **Sin registros de acceso** en el proxy ni en la aplicación ([ADR-0018](adr/0018-sin-registros.md)).
 - **Portabilidad.** Hono y Drizzle permiten el plan B (Render en Frankfurt + Neon en la UE) sin reescribir la lógica.
 
@@ -372,7 +372,7 @@ Las fechas son orientativas y cuentan desde la aprobación del plan (octubre de 
 | H6 | Votación secreta | Claves, emisión, recepción, cierre, tablón, cadena, publicación en el repositorio de datos, avisos. | Prueba «sin registros» y verificador sobre datos reales de prueba. |
 | H7 | Interfaz | Votante, mesa, proyección, comprobante, i18n es/en, accesibilidad. | Playwright + axe y presupuesto de tamaño. |
 | H8 | Resto del catálogo | Asistente de cargos, vocalías, voto limitado, asentimiento, nominal, papel, exportación del acta, sorteos drand. | Corpus completo. |
-| H9 | Infraestructura | `infra/` up/down (Hetzner), cloud-init, Compose, Actions con aprobación, Pages con atestación, copias cifradas con age. | Ciclo up → sesión → down → up que conserva los datos. |
+| H9 | Infraestructura | `infra/` up/down (Oracle gratuito o Hetzner de pago), cloud-init, Compose, Actions con aprobación, Pages con atestación, copias cifradas con age. | Ciclo up → sesión → down → up que conserva los datos. |
 | H10 | Publicación v1.0.0 | Documentación completa, EIPD y registro de actividades, convocatoria abierta de revisión, simulacro. | Enero–febrero de 2027. |
 | H11 | Primer uso real | Acuerdo del Pleno y Reglamento ratificado. | Pleno del 2.º cuatrimestre. |
 
@@ -389,7 +389,7 @@ Las fechas son orientativas y cuentan desde la aprobación del plan (octubre de 
    - Si el Consejo puede ser responsable del tratamiento.
    - Encaje con la base del art. 6.1.e.
    - Si la EIPD es obligatoria.
-   - Contratos de encargo (DPA) de Hetzner, Google y GitHub.
+   - Contratos de encargo (DPA) del proveedor de la VM (Oracle o Hetzner), Google y GitHub.
 7. Qué hacer si el Reglamento no está ratificado en febrero de 2027.
 8. Versión vigente de EN 301 549.
 

@@ -1,8 +1,8 @@
 # `infra`
 
-**ES** · Despliegue de la máquina de votación ([ADR-0017](../PLAN/adr/0017-despliegue-vm-efimera-pages.md), [ADR-0022](../PLAN/adr/0022-operacion-y-relevo.md)): una VM efímera en Hetzner que se enciende antes de cada sesión y se apaga después, con la API y un proxy TLS sin registros. La interfaz vive en GitHub Pages y el archivo público en un repositorio de datos aparte. Aquí no hay secretos: viven en el entorno «production» de GitHub.
+**ES** · Despliegue de la máquina de votación ([ADR-0017](../PLAN/adr/0017-despliegue-vm-efimera-pages.md), [ADR-0022](../PLAN/adr/0022-operacion-y-relevo.md)): una VM que se enciende antes de cada sesión y se apaga después, con la API y un proxy TLS sin registros. La interfaz vive en GitHub Pages y el archivo público en un repositorio de datos aparte. Aquí no hay secretos: viven en el entorno «production» de GitHub.
 
-**EN** · Deployment of the voting machine: an ephemeral Hetzner VM started before each meeting and stopped afterwards, with the API and a TLS proxy that keeps no logs. The web client lives on GitHub Pages and the public archive in a separate data repository. No secrets here: they live in GitHub's "production" environment.
+**EN** · Deployment of the voting machine: a VM started before each meeting and stopped afterwards, with the API and a TLS proxy that keeps no logs. The web client lives on GitHub Pages and the public archive in a separate data repository. No secrets here: they live in GitHub's "production" environment.
 
 | File | What |
 |---|---|
@@ -10,18 +10,44 @@
 | `compose.yaml` | API + Caddy. Docker logging driver `none` for both; read-only API container. |
 | `Caddyfile` | Two origins (session API and reception) with Let's Encrypt; no access log; client address removed from forwarded headers. |
 | `cloud-init.yaml` | First boot: Docker, age, git; SSH keys only; volatile system journal. |
-| `scripts/hetzner.sh` | `up` (from the newest snapshot, or fresh Ubuntu) and `down` (shutdown, snapshot, delete). |
+| `scripts/oracle.sh` | Free default: `up` starts the Oracle VM (creating it the first time) and `down` stops it; its disk keeps the data. |
+| `scripts/hetzner.sh` | Paid option: `up` (from the newest snapshot, or fresh Ubuntu) and `down` (shutdown, snapshot, delete). |
 | `scripts/deploy.sh` | Copies the deployed commit to the VM, writes `.env` and the profile, starts the stack. |
 | `scripts/backup.sh` | SQLite online backup, encrypted with age to the offline keys. |
 | `env.example` | Every variable the VM needs, with fictitious values. |
 
 Workflows in [`.github/workflows`](../.github/workflows/): `up.yml`, `down.yml`, `pages.yml` (build with provenance attestation), `ci.yml`, `codeql.yml`.
 
+## Proveedor · Provider
+
+La variable `PV_PROVIDER` elige el proveedor · The variable `PV_PROVIDER` chooses the provider ([ADR-0017](../PLAN/adr/0017-despliegue-vm-efimera-pages.md)):
+
+| | `oracle` (por defecto · default) | `hetzner` |
+|---|---|---|
+| **ES** coste · **EN** cost | Gratis («Always Free») · Free | De pago, por horas · Paid, hourly [precio por verificar · price to be verified] |
+| Empresa · Company | Oracle (EE. UU. · US) | Hetzner (UE · EU) |
+| Datos · Data | Región de la UE elegida al registrarse · EU region chosen at sign-up | UE · EU |
+| Entre sesiones · Between meetings | VM parada; su disco guarda los datos · VM stopped; its disk keeps the data | VM borrada; instantánea · VM deleted; snapshot |
+
+> ⚠️ **ES** · **Avisos de la opción gratuita.** Oracle es una empresa de EE. UU.: aunque los datos estén en una región de la UE, la ley de EE. UU. (CLOUD Act) puede obligarla a darles acceso. El registro pide probablemente una tarjeta para verificar la identidad, sin cobrar [por verificar]. Oracle puede parar una VM gratuita que pase 7 días casi sin uso, sin borrarla. La capacidad Arm gratuita no está garantizada y las condiciones pueden cambiar. **Si la delegación o la facultad lo financian, se recomienda Hetzner** (`PV_PROVIDER=hetzner`): empresa y jurisdicción de la UE. Cambiar es reversible; ver «Cambiar de proveedor».
+>
+> ⚠️ **EN** · **Caveats of the free option.** Oracle is a US company: even with the data in an EU region, US law (CLOUD Act) can compel it to give access. Sign-up probably asks for a card to verify identity, without charging [to be verified]. Oracle may stop a free VM that stays almost idle for 7 days, without deleting it. Free Arm capacity is not guaranteed and the terms may change. **If the delegation or the faculty can fund it, Hetzner is recommended** (`PV_PROVIDER=hetzner`): EU company and jurisdiction. Switching is reversible; see "Switching provider".
+
+### Cambiar de proveedor · Switching provider
+
+1. Run **Down** on the current provider: it leaves an encrypted backup in the backup repository.
+2. Set `PV_PROVIDER` and the new provider's secrets (below), then run **Up**: it creates an empty VM.
+3. Restore the backup into it ("Restoring a backup"). The public archive and the chain do not change.
+
 ## Puesta en marcha · Setup (once)
 
 Todas las cuentas se registran con el correo institucional del órgano (ADR-0022) · All accounts use the body's institutional e-mail.
 
-1. **Hetzner:** a project, and an API token with read/write access to it → secret `HCLOUD_TOKEN`.
+1. **VM provider**, one of:
+   - **Oracle (free):** sign up choosing an **EU home region** (e.g. Madrid or Frankfurt) → variable `OCI_REGION`. In the console:
+     - create a VCN with internet connectivity and add ingress rules for TCP 80 and 443 to its public subnet's security list → variables `OCI_SUBNET_OCID`, `OCI_COMPARTMENT_OCID` and `OCI_AVAILABILITY_DOMAIN`;
+     - add an API key to your user → secrets `OCI_USER_OCID`, `OCI_TENANCY_OCID`, `OCI_FINGERPRINT` and `OCI_PRIVATE_KEY`.
+   - **Hetzner (paid):** a project and an API token with read/write access to it → secret `HCLOUD_TOKEN`; variable `PV_PROVIDER=hetzner`.
 2. **Data repository:** a public repository with GitHub Pages enabled → variables `PV_DATA_REPOSITORY` (`owner/name`) and `PV_PAGES_URL`; a fine-grained token limited to that repository with *Contents: read and write* → secret `PV_DATA_TOKEN`.
 3. **Backup repository:** a **private** repository → variable `PV_BACKUP_REPOSITORY`; a fine-grained token limited to it with *Contents: read and write* → secret `PV_BACKUP_TOKEN`.
 4. **age keys:** two people of the Commission each run `age-keygen -o key.txt` on their own computer and keep the file offline. Their public keys (`age1…`), one per line → variable `AGE_RECIPIENTS`.
@@ -63,8 +89,9 @@ docker compose -f infra/compose.yaml cp pv.db api:/data/pv.db
   - `backup.sh` encrypts with age, leaves no plaintext copy, and the backup restores with its integrity checked;
   - actionlint and shellcheck check the workflows and scripts.
 
-**Sin probar · Not tested** (needs the accounts above): `hetzner.sh`, `deploy.sh`, `cloud-init.yaml`, the workflows on GitHub, Let's Encrypt on sslip.io names. **[por verificar · to be verified]**:
-- the hcloud CLI version pinned in the workflows and the server type name (`cx22`);
+**Sin probar · Not tested** (needs the accounts above): `oracle.sh`, `hetzner.sh`, `deploy.sh`, `cloud-init.yaml`, the workflows on GitHub, Let's Encrypt on sslip.io names. **[por verificar · to be verified]**:
+- the hcloud and OCI CLI versions pinned in the workflows, and the Hetzner server type name (`cx22`);
+- whether Oracle keeps the VM's public IPv4 across stop and start (`up` works either way: it publishes the current address);
 - the major versions of the GitHub actions;
 - whether `sslip.io` is in the Public Suffix List, which affects Let's Encrypt rate limits.
 

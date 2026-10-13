@@ -30,7 +30,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
   - the officials' and voters' screens for all of it, in Spanish and English;
   - eight new board cases (`board-010` … `board-017`) and a browser test that uses a real drand round.
 - Infrastructure (milestone H9):
-  - `infra/`: API image, Compose with Caddy and no logs, cloud-init, Hetzner `up`/`down` with snapshots, deployment, and encrypted backups with age;
+  - `infra/`: API image, Compose with Caddy and no logs, cloud-init, `up`/`down` for a free Oracle Cloud VM (default) or a paid Hetzner VM (EU company, `PV_PROVIDER`), deployment, and encrypted backups with age;
   - GitHub Actions: CI, CodeQL, Dependabot, Pages with build provenance attestation, and `up`/`down` with approval;
   - the web client says when the platform is off.
 - E-mail and publication to a local folder, for development and browser tests.

@@ -1,5 +1,6 @@
 # Stops the voting machine when nothing is open (ADR-0017, ADR-0022): encrypted backup to the
-# private backup repository, snapshot, deletion of the VM, and the web client switched to "off".
+# private backup repository, then the VM is stopped (Oracle) or snapshotted and deleted (Hetzner),
+# and the web client is switched to "off".
 name: Down
 on:
   workflow_dispatch:
@@ -8,6 +9,8 @@ permissions:
   contents: read
 env:
   HCLOUD_VERSION: "1.57.0" # [to be verified] pin the current hcloud CLI release
+  OCI_CLI_VERSION: "3.66.0" # [to be verified] pin the current OCI CLI release
+  PROVIDER: ${{ vars.PV_PROVIDER || 'oracle' }}
   PV_INSTANCE: pv
 jobs:
   down:
@@ -15,26 +18,47 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v5
-      - name: Install hcloud
-        run: curl -fsSL "https://github.com/hetznercloud/cli/releases/download/v${HCLOUD_VERSION}/hcloud-linux-amd64.tar.gz" | sudo tar -xz -C /usr/local/bin hcloud
       - name: Deploy key
         env:
           KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         run: |
           install -m 600 /dev/null key
           printf '%s\n' "$KEY" > key
+      - name: Install and configure the OCI CLI
+        if: env.PROVIDER == 'oracle'
+        env:
+          OCI_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+          OCI_USER: ${{ secrets.OCI_USER_OCID }}
+          OCI_TENANCY: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_REGION: ${{ vars.OCI_REGION }}
+        run: |
+          pipx install "oci-cli==${OCI_CLI_VERSION}"
+          mkdir -p ~/.oci
+          install -m 600 /dev/null ~/.oci/key.pem
+          printf '%s\n' "$OCI_KEY" > ~/.oci/key.pem
+          printf '[DEFAULT]\nuser=%s\nfingerprint=%s\ntenancy=%s\nregion=%s\nkey_file=%s\n' \
+            "$OCI_USER" "$OCI_FINGERPRINT" "$OCI_TENANCY" "$OCI_REGION" "$HOME/.oci/key.pem" > ~/.oci/config
+          chmod 600 ~/.oci/config
+      - name: Install hcloud
+        if: env.PROVIDER == 'hetzner'
+        run: curl -fsSL "https://github.com/hetznercloud/cli/releases/download/v${HCLOUD_VERSION}/hcloud-linux-amd64.tar.gz" | sudo tar -xz -C /usr/local/bin hcloud
       - name: Encrypted backup
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          OCI_COMPARTMENT_OCID: ${{ vars.OCI_COMPARTMENT_OCID }}
           RECIPIENTS: ${{ vars.AGE_RECIPIENTS }}
         run: |
-          ip=$(hcloud server ip "$PV_INSTANCE")
-          ssh="ssh -i key -o StrictHostKeyChecking=accept-new root@$ip"
+          ip=$(sh "infra/scripts/$PROVIDER.sh" ip)
+          user=root
+          sudo=""
+          if [ "$PROVIDER" = oracle ]; then user=ubuntu; sudo=sudo; fi
+          ssh="ssh -i key -o StrictHostKeyChecking=accept-new $user@$ip"
           name="pv-$(date -u +%Y%m%dT%H%M%SZ).db.age"
           printf '%s\n' "$RECIPIENTS" | $ssh "cat > /tmp/recipients"
-          $ssh "cd /opt/pv/src && sh infra/scripts/backup.sh /tmp/recipients /tmp/$name"
-          scp -i key "root@$ip:/tmp/$name" "$name"
-          $ssh "rm -f /tmp/$name /tmp/recipients && cd /opt/pv/src && docker compose -f infra/compose.yaml down"
+          $ssh "cd /opt/pv/src && $sudo sh infra/scripts/backup.sh /tmp/recipients /tmp/$name && $sudo chown $user /tmp/$name"
+          scp -i key "$user@$ip:/tmp/$name" "$name"
+          $ssh "rm -f /tmp/$name /tmp/recipients && cd /opt/pv/src && $sudo docker compose -f infra/compose.yaml down"
           echo "BACKUP=$name" >> "$GITHUB_ENV"
       - name: Store the backup in the private backup repository
         env:
@@ -44,12 +68,13 @@ jobs:
           base64 -w0 "$BACKUP" > content.b64
           jq -n --arg m "Backup $BACKUP" --rawfile c content.b64 '{message: $m, content: $c}' > body.json
           gh api --method PUT "repos/$REPO/contents/$BACKUP" --input body.json > /dev/null
-      - name: Snapshot and delete the VM
+      - name: Stop the VM
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-        run: sh infra/scripts/hetzner.sh down
+          OCI_COMPARTMENT_OCID: ${{ vars.OCI_COMPARTMENT_OCID }}
+        run: sh "infra/scripts/$PROVIDER.sh" down
       - if: always()
-        run: shred -u key 2>/dev/null || true
+        run: shred -u key ~/.oci/key.pem 2>/dev/null || true
   pages:
     needs: down
     uses: ./.github/workflows/pages.yml

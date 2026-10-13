@@ -105,7 +105,7 @@
 
 | Provider | What it could do | What limits it |
 |---|---|---|
-| VM provider | The same as A1 at the infrastructure level. | Contract and EU jurisdiction [DPA to be verified]; ephemeral VM. |
+| VM provider | The same as A1 at the infrastructure level. | Contract [DPA to be verified]; VM off outside meetings. With the free option (Oracle, a US company) a request for access under US law is possible even with data in the EU; with the paid option (Hetzner) the jurisdiction is the EU. |
 | GitHub | Serve a tampered interface, or alter the data repository or the fingerprint. | Third-party-verifiable build attestations, the e-mailed `record_hash` and independent clones of the archive. |
 | Google (e-mail) | Read access codes and notices, or not deliver them. | E-mails never contain voting credentials; SMTP fallback. |
 | drand | Bias draws only if colluding with the officials. | Prior commitment by the officials, a round fixed in public before it exists and a verifiable BLS signature. Residual risk: in a live vote, if nobody checks the round shown on screen at closing, someone who knows the seed and controls the server could choose among several rounds already seen. |

@@ -1,9 +1,10 @@
 #!/bin/sh
-# Hetzner Cloud adapter for `up` and `down` (ADR-0017), used by the GitHub Actions workflows.
+# Hetzner Cloud adapter for `up` and `down` (ADR-0017): the paid option, entirely in an EU company.
 # Needs the hcloud CLI and HCLOUD_TOKEN. Every resource carries the label pv-instance=$PV_INSTANCE.
 #
 #   hetzner.sh up <ssh public key file>     creates the VM (from the last snapshot if any); prints its IPv4
 #   hetzner.sh down                         shuts the VM down, snapshots it and deletes it
+#   hetzner.sh ip                           prints the IPv4 of the running VM
 set -eu
 instance=${PV_INSTANCE:-pv}
 type=${PV_SERVER_TYPE:-cx22}
@@ -49,8 +50,11 @@ case ${1:-} in
     hcloud server delete "$instance"
     hcloud ssh-key delete "$instance-deploy" >/dev/null 2>&1 || true
     ;;
+  ip)
+    hcloud server ip "$instance"
+    ;;
   *)
-    echo "usage: hetzner.sh up <ssh public key file> | down" >&2
+    echo "usage: hetzner.sh up <ssh public key file> | down | ip" >&2
     exit 2
     ;;
 esac

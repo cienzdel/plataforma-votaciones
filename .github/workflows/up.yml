@@ -1,16 +1,19 @@
 # Starts the voting machine before a meeting or an assent (ADR-0017, ADR-0022). Runs in the
 # "production" environment, which requires approval. Every secret comes from that environment.
+# The provider is the variable PV_PROVIDER: "oracle" (free, default) or "hetzner" (paid, EU company).
 name: Up
 on:
   workflow_dispatch:
     inputs:
-      server_type: { description: "Hetzner server type", default: "cx22" }
-      location: { description: "Hetzner location (EU)", default: "fsn1" }
+      server_type: { description: "Hetzner server type (Hetzner only)", default: "cx22" }
+      location: { description: "Hetzner location in the EU (Hetzner only)", default: "fsn1" }
 concurrency: machine
 permissions:
   contents: read
 env:
   HCLOUD_VERSION: "1.57.0" # [to be verified] pin the current hcloud CLI release
+  OCI_CLI_VERSION: "3.66.0" # [to be verified] pin the current OCI CLI release
+  PROVIDER: ${{ vars.PV_PROVIDER || 'oracle' }}
 jobs:
   up:
     runs-on: ubuntu-24.04
@@ -20,8 +23,6 @@ jobs:
       reception: ${{ steps.hosts.outputs.reception }}
     steps:
       - uses: actions/checkout@v5
-      - name: Install hcloud
-        run: curl -fsSL "https://github.com/hetznercloud/cli/releases/download/v${HCLOUD_VERSION}/hcloud-linux-amd64.tar.gz" | sudo tar -xz -C /usr/local/bin hcloud
       - name: Deploy key
         env:
           KEY: ${{ secrets.DEPLOY_SSH_KEY }}
@@ -29,13 +30,35 @@ jobs:
           install -m 600 /dev/null key
           printf '%s\n' "$KEY" > key
           ssh-keygen -y -f key > key.pub
-      - name: Create the VM
+      - name: Install and configure the OCI CLI
+        if: env.PROVIDER == 'oracle'
+        env:
+          OCI_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+          OCI_USER: ${{ secrets.OCI_USER_OCID }}
+          OCI_TENANCY: ${{ secrets.OCI_TENANCY_OCID }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_REGION: ${{ vars.OCI_REGION }}
+        run: |
+          pipx install "oci-cli==${OCI_CLI_VERSION}"
+          mkdir -p ~/.oci
+          install -m 600 /dev/null ~/.oci/key.pem
+          printf '%s\n' "$OCI_KEY" > ~/.oci/key.pem
+          printf '[DEFAULT]\nuser=%s\nfingerprint=%s\ntenancy=%s\nregion=%s\nkey_file=%s\n' \
+            "$OCI_USER" "$OCI_FINGERPRINT" "$OCI_TENANCY" "$OCI_REGION" "$HOME/.oci/key.pem" > ~/.oci/config
+          chmod 600 ~/.oci/config
+      - name: Install hcloud
+        if: env.PROVIDER == 'hetzner'
+        run: curl -fsSL "https://github.com/hetznercloud/cli/releases/download/v${HCLOUD_VERSION}/hcloud-linux-amd64.tar.gz" | sudo tar -xz -C /usr/local/bin hcloud
+      - name: Start the VM
         id: vm
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
           PV_SERVER_TYPE: ${{ inputs.server_type }}
           PV_LOCATION: ${{ inputs.location }}
-        run: echo "ip=$(sh infra/scripts/hetzner.sh up key.pub)" >> "$GITHUB_OUTPUT"
+          OCI_COMPARTMENT_OCID: ${{ vars.OCI_COMPARTMENT_OCID }}
+          OCI_SUBNET_OCID: ${{ vars.OCI_SUBNET_OCID }}
+          OCI_AVAILABILITY_DOMAIN: ${{ vars.OCI_AVAILABILITY_DOMAIN }}
+        run: echo "ip=$(sh "infra/scripts/$PROVIDER.sh" up key.pub)" >> "$GITHUB_OUTPUT"
       - name: Host names
         id: hosts
         env:
@@ -83,7 +106,9 @@ jobs:
         env:
           IP: ${{ steps.vm.outputs.ip }}
           PROFILE: profiles/${{ vars.PV_PROFILE_FILE }}
-        run: sh infra/scripts/deploy.sh "$IP" key .env "$PROFILE"
+        run: |
+          if [ "$PROVIDER" = oracle ]; then export PV_SSH_USER=ubuntu; fi
+          sh infra/scripts/deploy.sh "$IP" key .env "$PROFILE"
       - name: Wait for the API
         env:
           API: ${{ steps.hosts.outputs.api }}
@@ -94,7 +119,7 @@ jobs:
           done
           exit 1
       - if: always()
-        run: shred -u key .env 2>/dev/null || true
+        run: shred -u key .env ~/.oci/key.pem 2>/dev/null || true
   pages:
     needs: up
     uses: ./.github/workflows/pages.yml

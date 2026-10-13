@@ -88,7 +88,7 @@
 
 | Proveedor | Qué podría hacer | Qué lo limita |
 |---|---|---|
-| Proveedor de la VM | Lo mismo que A1 a nivel de infraestructura: leer memoria y disco, o capturar tráfico. | Contrato y jurisdicción de la UE [por verificar el DPA]. VM efímera. |
+| Proveedor de la VM | Lo mismo que A1 a nivel de infraestructura: leer memoria y disco, o capturar tráfico. | Contrato [por verificar el DPA] y VM apagada fuera de las sesiones. Con la opción gratuita (Oracle, empresa de EE. UU.) cabe una petición de acceso bajo leyes de EE. UU. aunque los datos estén en la UE; con la de pago (Hetzner) la jurisdicción es de la UE. |
 | GitHub | Servir una interfaz manipulada, alterar el repositorio de datos o la huella publicada. | Atestaciones de compilación verificables por terceros, correo con `record_hash` al censo y clones independientes del archivo. |
 | Google (correo) | Leer códigos de acceso y avisos, o no entregarlos. | Los correos no contienen credenciales de voto. Plan B con SMTP. |
 | drand | Sesgar sorteos solo si colabora con la mesa. | Compromiso previo de la mesa, ronda fijada en público antes de que exista y firma BLS verificable. Riesgo residual: en una votación en directo, si nadie mira la ronda proyectada al cerrar, quien conozca la semilla y controle el servidor podría elegir entre varias rondas ya vistas. |
