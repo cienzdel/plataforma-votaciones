@@ -22,3 +22,8 @@ dist/
 test-results/
 playwright-report/
 
+
+# Secretos de despliegue
+infra/.env
+infra/profile.json
+*.age

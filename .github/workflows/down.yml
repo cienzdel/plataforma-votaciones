@@ -1,0 +1,63 @@
+# Stops the voting machine when nothing is open (ADR-0017, ADR-0022): encrypted backup to the
+# private backup repository, snapshot, deletion of the VM, and the web client switched to "off".
+name: Down
+on:
+  workflow_dispatch:
+concurrency: machine
+permissions:
+  contents: read
+env:
+  HCLOUD_VERSION: "1.57.0" # [to be verified] pin the current hcloud CLI release
+  PV_INSTANCE: pv
+jobs:
+  down:
+    runs-on: ubuntu-24.04
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install hcloud
+        run: curl -fsSL "https://github.com/hetznercloud/cli/releases/download/v${HCLOUD_VERSION}/hcloud-linux-amd64.tar.gz" | sudo tar -xz -C /usr/local/bin hcloud
+      - name: Deploy key
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          install -m 600 /dev/null key
+          printf '%s\n' "$KEY" > key
+      - name: Encrypted backup
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          RECIPIENTS: ${{ vars.AGE_RECIPIENTS }}
+        run: |
+          ip=$(hcloud server ip "$PV_INSTANCE")
+          ssh="ssh -i key -o StrictHostKeyChecking=accept-new root@$ip"
+          name="pv-$(date -u +%Y%m%dT%H%M%SZ).db.age"
+          printf '%s\n' "$RECIPIENTS" | $ssh "cat > /tmp/recipients"
+          $ssh "cd /opt/pv/src && sh infra/scripts/backup.sh /tmp/recipients /tmp/$name"
+          scp -i key "root@$ip:/tmp/$name" "$name"
+          $ssh "rm -f /tmp/$name /tmp/recipients && cd /opt/pv/src && docker compose -f infra/compose.yaml down"
+          echo "BACKUP=$name" >> "$GITHUB_ENV"
+      - name: Store the backup in the private backup repository
+        env:
+          GH_TOKEN: ${{ secrets.PV_BACKUP_TOKEN }}
+          REPO: ${{ vars.PV_BACKUP_REPOSITORY }}
+        run: |
+          base64 -w0 "$BACKUP" > content.b64
+          jq -n --arg m "Backup $BACKUP" --rawfile c content.b64 '{message: $m, content: $c}' > body.json
+          gh api --method PUT "repos/$REPO/contents/$BACKUP" --input body.json > /dev/null
+      - name: Snapshot and delete the VM
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+        run: sh infra/scripts/hetzner.sh down
+      - if: always()
+        run: shred -u key 2>/dev/null || true
+  pages:
+    needs: down
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+      attestations: write
+    with:
+      api: ""
+      reception: ""

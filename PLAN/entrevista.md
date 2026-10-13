@@ -284,3 +284,11 @@ Formato: `[Bloque N] Decisión — Justificación`. Las decisiones aplazadas se 
 - [H8] El recuento manual y en papel solo existe en directo, y las votaciones sin clave no esperan a GitHub Pages. — La espera protege la clave de las votaciones secretas; sin clave no hay nada que comprobar.
 - [H8] El asistente de cargos propone la segunda vuelta, la repetición o el sorteo, y la mesa confirma. **Pendiente:** retirar automáticamente de los cargos siguientes a quien ya ha sido elegido; ahora la mesa lo hace al crear cada votación.
 - [H8] Una persona solo puede pedir sus credenciales desde un navegador; si lo intenta desde otro, la interfaz lo explica. — Es la regla de una credencial por derecho del protocolo.
+
+## Hito H9 (2026-10-13)
+
+- [H9] Los datos sobreviven entre sesiones en la instantánea que deja `down` (se guardan las dos últimas), como dice ADR-0017. — Alternativa no elegida: un volumen de Hetzner aparte, más simple de restaurar pero con coste fijo.
+- [H9] La copia cifrada con age se hace en `down` y se guarda en un repositorio **privado** de copias, no tras cada cierre. — Los artefactos de Actions de un repositorio público los puede descargar cualquiera; aunque estén cifrados, no conviene publicar datos personales. Hacer la copia tras cada cierre exigiría age dentro de la API; queda como mejora si la Comisión lo pide.
+- [H9] La URL de la API se publica en el `config.json` de la interfaz, que solo despliega el flujo de Pages del repositorio de código; la VM no puede cambiarla. Con la VM apagada, `config.json` no tiene API y la interfaz lo explica. — La VM solo escribe en el repositorio de datos.
+- [H9] El contenedor usa Node.js 24 LTS. Docker y Caddy no guardan registros (controlador `none`, sin directiva `log`), Caddy quita la dirección del cliente de las cabeceras y el diario del sistema es volátil. — ADR-0018 en la práctica.
+- [H9] El acceso SSH a la VM usa una clave de despliegue guardada como secreto del entorno «production», y el puerto 22 queda abierto solo con autenticación por clave. — Los ejecutores de GitHub no tienen IP fija.

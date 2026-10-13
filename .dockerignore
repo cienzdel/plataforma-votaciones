@@ -1,0 +1,13 @@
+# Only what infra/api.Dockerfile copies is needed; never send private or generated files.
+_contexto
+PROMPT_INICIAL.md
+**/node_modules
+**/dist
+**/coverage
+**/test-results
+**/.venv
+.git
+.data
+infra/.env
+*.db
+*.age

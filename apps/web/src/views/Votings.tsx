@@ -423,7 +423,7 @@ export function MinutesPanel({ meeting }: PanelProps) {
   if (!meeting) return <Status>{t("no_meeting")}</Status>;
   const download = (format: "md" | "json") =>
     a.run(async () => {
-      const res = await fetch(`${cfg().api}/meetings/${meeting.id}/minutes${format === "json" ? "?format=json" : ""}`, {
+      const res = await fetch(`${cfg().api!}/meetings/${meeting.id}/minutes${format === "json" ? "?format=json" : ""}`, {
         headers: { authorization: "Bearer " + getSession()!.token },
         credentials: "omit",
       });

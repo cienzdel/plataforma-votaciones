@@ -1,0 +1,20 @@
+# Two origins on the same machine (ADR-0004): the session API and the anonymous reception.
+# No `log` directive anywhere: Caddy then writes no access log (ADR-0018). The client address is
+# removed from the forwarded headers, so the application never sees it.
+{
+	email {$ACME_EMAIL}
+}
+
+{$API_HOST} {
+	reverse_proxy api:8080 {
+		header_up -X-Forwarded-For
+		header_up -X-Real-IP
+	}
+}
+
+{$RECEPTION_HOST} {
+	reverse_proxy api:8081 {
+		header_up -X-Forwarded-For
+		header_up -X-Real-IP
+	}
+}

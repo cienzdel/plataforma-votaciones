@@ -1,10 +1,10 @@
 /** Configuration, session and calls to the two API origins. */
 
 export interface Config {
-  /** Session API. */
-  api: string;
+  /** Session API, or null while the voting machine is off. */
+  api: string | null;
   /** Reception origin (another subdomain). */
-  reception: string;
+  reception: string | null;
   /** Where GitHub Pages serves the data repository, or null. */
   data: string | null;
 }
@@ -63,7 +63,7 @@ export async function api<T = unknown>(method: string, path: string, body?: unkn
   const headers: Record<string, string> = {};
   if (body !== undefined) headers["content-type"] = "application/json";
   if (s !== null) headers.authorization = "Bearer " + s.token;
-  const res = await fetch(cfg().api + path, { method, headers, credentials: "omit", body: body === undefined ? null : JSON.stringify(body) });
+  const res = await fetch(cfg().api! + path, { method, headers, credentials: "omit", body: body === undefined ? null : JSON.stringify(body) });
   const data = res.status === 204 ? null : await res.json();
   if (res.status === 401 && s !== null) setSession(null);
   if (!res.ok) throw new ApiError(res.status, (data as { error?: string })?.error ?? "error");
@@ -72,7 +72,7 @@ export async function api<T = unknown>(method: string, path: string, body?: unkn
 
 /** Sends a vote to the reception origin: no session header and no cookies (spec/protocol.md §6). */
 export async function postVote(vote: unknown): Promise<{ ack: string }> {
-  const res = await fetch(cfg().reception + "/cast", {
+  const res = await fetch(cfg().reception! + "/cast", {
     method: "POST",
     headers: { "content-type": "application/json" },
     credentials: "omit",

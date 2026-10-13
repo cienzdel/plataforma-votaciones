@@ -1,0 +1,19 @@
+#cloud-config
+# First boot of a fresh VM (later boots start from the snapshot left by `down`).
+# Installs Docker, age and git; nothing else. SSH accepts keys only.
+package_update: true
+package_upgrade: true
+packages:
+  - docker.io
+  - docker-compose-v2
+  - age
+  - git
+ssh_pwauth: false
+runcmd:
+  - systemctl enable --now docker
+  - mkdir -p /opt/pv
+  # Keep the system journal in memory only and small: it never receives voter traffic (containers
+  # log nothing), but nothing about the session should outlive the VM's disk either.
+  - mkdir -p /etc/systemd/journald.conf.d
+  - printf '[Journal]\nStorage=volatile\nRuntimeMaxUse=32M\n' > /etc/systemd/journald.conf.d/pv.conf
+  - systemctl restart systemd-journald

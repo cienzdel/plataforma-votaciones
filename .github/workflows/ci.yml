@@ -1,0 +1,30 @@
+# Every pull request and push to main: types, unit and integration tests, the shared corpus in
+# TypeScript and Python, the size budget and the browser tests with axe (PLAN/PLAN.md §10).
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: 24, cache: pnpm }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.12" }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - name: Python verifier
+        working-directory: tools/verify
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install cryptography==50.0.2 py_ecc==8.0.0 tzdata==2026.5 pytest==9.1.1
+          .venv/bin/python -m pytest -q
+      - run: pnpm test
+      - run: pnpm --filter @pv/web exec playwright install --with-deps chromium
+      - run: pnpm e2e

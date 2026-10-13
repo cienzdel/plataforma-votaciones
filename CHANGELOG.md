@@ -29,6 +29,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
   - export of the minutes (Markdown and JSON);
   - the officials' and voters' screens for all of it, in Spanish and English;
   - eight new board cases (`board-010` … `board-017`) and a browser test that uses a real drand round.
+- Infrastructure (milestone H9):
+  - `infra/`: API image, Compose with Caddy and no logs, cloud-init, Hetzner `up`/`down` with snapshots, deployment, and encrypted backups with age;
+  - GitHub Actions: CI, CodeQL, Dependabot, Pages with build provenance attestation, and `up`/`down` with approval;
+  - the web client says when the platform is off.
 - E-mail and publication to a local folder, for development and browser tests.
 - Test that reception writes only the ballot and the spent token, with no log, cookie, time or order, and end-to-end test where `tools/verify` accepts the data repository published by the API.
 - Fictitious example profile `profiles/example.json` for development and tests.

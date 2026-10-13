@@ -1,0 +1,39 @@
+# The voting machine: the API and a TLS proxy. Neither keeps logs (ADR-0018): Docker's logging
+# driver is "none" and Caddy has no access log unless a `log` directive is added, and there is none.
+name: pv
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: infra/api.Dockerfile
+    env_file: .env
+    environment:
+      PV_PROFILE: /profile/profile.json
+    volumes:
+      - pv-data:/data
+      - ./profile.json:/profile/profile.json:ro
+    read_only: true
+    tmpfs: [/tmp]
+    restart: unless-stopped
+    logging: { driver: none }
+
+  proxy:
+    image: caddy:2.10-alpine
+    ports: ["80:80", "443:443"]
+    environment:
+      API_HOST: ${API_HOST}
+      RECEPTION_HOST: ${RECEPTION_HOST}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [api]
+    restart: unless-stopped
+    logging: { driver: none }
+
+volumes:
+  pv-data:
+  caddy-data:
+  caddy-config:

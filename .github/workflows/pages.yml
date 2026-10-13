@@ -1,0 +1,46 @@
+# Builds the web client from this repository and publishes it on GitHub Pages with a build
+# provenance attestation (ADR-0017). config.json gives the API addresses; empty when it is off.
+name: Pages
+on:
+  workflow_dispatch:
+    inputs:
+      api: { description: "Session API URL (empty: platform off)", default: "", type: string }
+      reception: { description: "Reception URL", default: "", type: string }
+  workflow_call:
+    inputs:
+      api: { type: string, default: "" }
+      reception: { type: string, default: "" }
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  attestations: write
+concurrency: pages
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile --filter "@pv/web..."
+      - run: pnpm --filter @pv/web build
+      - name: Write config.json
+        env:
+          API: ${{ inputs.api }}
+          RECEPTION: ${{ inputs.reception }}
+          DATA: ${{ vars.PV_PAGES_URL }}
+        run: node apps/web/scripts/config.ts apps/web/dist/config.json
+      - run: node apps/web/scripts/size.ts
+      - uses: actions/attest-build-provenance@v3
+        with: { subject-path: "apps/web/dist/**" }
+      - uses: actions/upload-pages-artifact@v4
+        with: { path: apps/web/dist }
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

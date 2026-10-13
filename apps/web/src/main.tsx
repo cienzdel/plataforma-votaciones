@@ -1,6 +1,6 @@
 import { render } from "preact";
 import { useEffect, useState } from "preact/hooks";
-import { api, getSession, loadConfig, setSession, type Session } from "./api.ts";
+import { api, cfg, getSession, loadConfig, setSession, type Session } from "./api.ts";
 import { getLang, setLang, t, useLang } from "./i18n.ts";
 import { Status } from "./ui.tsx";
 import { Login } from "./views/Login.tsx";
@@ -13,6 +13,18 @@ type Route = "vote" | "officials" | "projection";
 function route(): Route {
   const h = location.hash.replace(/^#\/?/, "");
   return h === "officials" || h === "projection" ? h : "vote";
+}
+
+/** Shown while the voting machine is off (config.json without an API). */
+function Off() {
+  const data = cfg().data;
+  return (
+    <section>
+      <h1>{t("app_title")}</h1>
+      <Status>{t("platform_off")}</Status>
+      {data && <a href={data}>{t("public_archive")}</a>}
+    </section>
+  );
 }
 
 function App() {
@@ -61,7 +73,9 @@ function App() {
         )}
       </header>
       <main id="main" tabIndex={-1}>
-        {!session ? <Login onLogin={setS} /> : r === "officials" ? <Officials /> : r === "projection" ? <Projection /> : <Voter />}
+        {cfg().api === null ? (
+          <Off />
+        ) : !session ? <Login onLogin={setS} /> : r === "officials" ? <Officials /> : r === "projection" ? <Projection /> : <Voter />}
       </main>
     </>
   );

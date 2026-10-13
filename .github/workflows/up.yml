@@ -1,0 +1,108 @@
+# Starts the voting machine before a meeting or an assent (ADR-0017, ADR-0022). Runs in the
+# "production" environment, which requires approval. Every secret comes from that environment.
+name: Up
+on:
+  workflow_dispatch:
+    inputs:
+      server_type: { description: "Hetzner server type", default: "cx22" }
+      location: { description: "Hetzner location (EU)", default: "fsn1" }
+concurrency: machine
+permissions:
+  contents: read
+env:
+  HCLOUD_VERSION: "1.57.0" # [to be verified] pin the current hcloud CLI release
+jobs:
+  up:
+    runs-on: ubuntu-24.04
+    environment: production
+    outputs:
+      api: ${{ steps.hosts.outputs.api }}
+      reception: ${{ steps.hosts.outputs.reception }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install hcloud
+        run: curl -fsSL "https://github.com/hetznercloud/cli/releases/download/v${HCLOUD_VERSION}/hcloud-linux-amd64.tar.gz" | sudo tar -xz -C /usr/local/bin hcloud
+      - name: Deploy key
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          install -m 600 /dev/null key
+          printf '%s\n' "$KEY" > key
+          ssh-keygen -y -f key > key.pub
+      - name: Create the VM
+        id: vm
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          PV_SERVER_TYPE: ${{ inputs.server_type }}
+          PV_LOCATION: ${{ inputs.location }}
+        run: echo "ip=$(sh infra/scripts/hetzner.sh up key.pub)" >> "$GITHUB_OUTPUT"
+      - name: Host names
+        id: hosts
+        env:
+          IP: ${{ steps.vm.outputs.ip }}
+        run: |
+          dashed=$(echo "$IP" | tr . -)
+          {
+            echo "api_host=api.$dashed.sslip.io"
+            echo "reception_host=cast.$dashed.sslip.io"
+            echo "api=https://api.$dashed.sslip.io"
+            echo "reception=https://cast.$dashed.sslip.io"
+          } >> "$GITHUB_OUTPUT"
+      - name: Environment file
+        env:
+          API_HOST: ${{ steps.hosts.outputs.api_host }}
+          RECEPTION_HOST: ${{ steps.hosts.outputs.reception_host }}
+          ACME_EMAIL: ${{ vars.ACME_EMAIL }}
+          PV_WEB_ORIGIN: ${{ vars.PV_WEB_ORIGIN }}
+          PV_FIRST_OFFICIAL_EMAIL: ${{ vars.PV_FIRST_OFFICIAL_EMAIL }}
+          PV_FIRST_OFFICIAL_NAME: ${{ vars.PV_FIRST_OFFICIAL_NAME }}
+          PV_MASTER_KEY: ${{ secrets.PV_MASTER_KEY }}
+          PV_MAIL: ${{ vars.PV_MAIL }}
+          PV_MAIL_FROM: ${{ vars.PV_MAIL_FROM }}
+          PV_GMAIL_CLIENT_ID: ${{ secrets.PV_GMAIL_CLIENT_ID }}
+          PV_GMAIL_CLIENT_SECRET: ${{ secrets.PV_GMAIL_CLIENT_SECRET }}
+          PV_GMAIL_REFRESH_TOKEN: ${{ secrets.PV_GMAIL_REFRESH_TOKEN }}
+          PV_SMTP_HOST: ${{ vars.PV_SMTP_HOST }}
+          PV_SMTP_PORT: ${{ vars.PV_SMTP_PORT }}
+          PV_SMTP_USER: ${{ secrets.PV_SMTP_USER }}
+          PV_SMTP_PASSWORD: ${{ secrets.PV_SMTP_PASSWORD }}
+          PV_PUBLISH: github
+          PV_GITHUB_REPOSITORY: ${{ vars.PV_DATA_REPOSITORY }}
+          PV_GITHUB_BRANCH: main
+          PV_GITHUB_TOKEN: ${{ secrets.PV_DATA_TOKEN }}
+          PV_PAGES_URL: ${{ vars.PV_PAGES_URL }}
+        run: |
+          install -m 600 /dev/null .env
+          for name in API_HOST RECEPTION_HOST ACME_EMAIL PV_WEB_ORIGIN PV_FIRST_OFFICIAL_EMAIL PV_FIRST_OFFICIAL_NAME \
+            PV_MASTER_KEY PV_MAIL PV_MAIL_FROM PV_GMAIL_CLIENT_ID PV_GMAIL_CLIENT_SECRET PV_GMAIL_REFRESH_TOKEN \
+            PV_SMTP_HOST PV_SMTP_PORT PV_SMTP_USER PV_SMTP_PASSWORD PV_PUBLISH PV_GITHUB_REPOSITORY PV_GITHUB_BRANCH \
+            PV_GITHUB_TOKEN PV_PAGES_URL; do
+            printf '%s=%s\n' "$name" "$(printenv "$name")" >> .env
+          done
+      - name: Deploy
+        env:
+          IP: ${{ steps.vm.outputs.ip }}
+          PROFILE: profiles/${{ vars.PV_PROFILE_FILE }}
+        run: sh infra/scripts/deploy.sh "$IP" key .env "$PROFILE"
+      - name: Wait for the API
+        env:
+          API: ${{ steps.hosts.outputs.api }}
+        run: |
+          for _ in $(seq 1 60); do
+            if curl -fsS "$API/health"; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - if: always()
+        run: shred -u key .env 2>/dev/null || true
+  pages:
+    needs: up
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+      attestations: write
+    with:
+      api: ${{ needs.up.outputs.api }}
+      reception: ${{ needs.up.outputs.reception }}
