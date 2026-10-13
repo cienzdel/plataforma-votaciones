@@ -14,7 +14,7 @@
 | [`protocol.md`](protocol.md) | Parties, logging requirements, creation, opening, credential issuance, casting, closing, publication, other modes and the verification checklist. |
 | [`methods.md`](methods.md) | Quorum and thresholds, `yes_no`, `single_winner`, `posts`, `limited_vote`, degree filters and assent. |
 | [`draws.md`](draws.md) | drand quicknet parameters, commitment, seed derivation, shuffle, tie-break orders and in-room ties. |
-| [`cases/`](cases/) | 87 cases: methods, quorum, draws, byte-level vectors and complete boards with real signatures. |
+| [`cases/`](cases/) | 95 cases: methods, quorum, draws, byte-level vectors and complete boards in every mode. |
 
 ## Versioning
 

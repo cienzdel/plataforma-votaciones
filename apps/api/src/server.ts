@@ -22,6 +22,8 @@ import { DirectoryMailer, gmailMailer, MemoryMailer, smtpMailer, type Mailer } f
 import { parseProfile } from "./profile.ts";
 import { DirectoryPublisher, GitHubPublisher, type Publisher } from "./publisher.ts";
 import { receptionApp } from "./reception.ts";
+import { closeDueAssents } from "./assents.ts";
+import { drandClient } from "./drand.ts";
 import { closeDue } from "./votings.ts";
 
 function env(name: string): string {
@@ -64,17 +66,19 @@ const deps = {
   webOrigin: env("PV_WEB_ORIGIN"),
   publisher: publisher(),
   masterKey: masterKey(env("PV_MASTER_KEY")),
+  drand: drandClient(),
 };
 ensureFirstOfficial(deps, { email: env("PV_FIRST_OFFICIAL_EMAIL"), name: env("PV_FIRST_OFFICIAL_NAME") });
 serve({ fetch: createApp(deps).fetch, port: Number(process.env.PV_PORT ?? 8080) });
 serve({ fetch: receptionApp(deps).fetch, port: Number(process.env.PV_RECEPTION_PORT ?? 8081) });
 
-// Final-link votings close on their own at the fixed time.
+// Final-link votings and assents close on their own at the fixed time.
 let closing = false;
 setInterval(() => {
   if (closing) return;
   closing = true;
   closeDue(deps)
+    .then(() => closeDueAssents(deps))
     .catch((e: Error) => console.error("scheduled closing failed:", e.name))
     .finally(() => (closing = false));
 }, 5_000);

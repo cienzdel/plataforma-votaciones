@@ -78,11 +78,13 @@ Checks outside a single board, reported by the verifier of a whole data reposito
 | Cell ids, canonical JSON, hash chain | `cell_id-*`, `jcs-*`, `chain-*` |
 | Assent deadlines (including both daylight-saving changes) and outcome | `assent-001` … `assent-006` |
 | Complete boards with real RSA-3072 blind signatures, and tampered copies | `board-001` … `board-009` |
+| Boards without signatures (manual, roll call), tie-break draws on real round 33026212 (final link and live), annulment before the draw, and tampered copies | `board-010` … `board-017` |
 
 ## How the expected values were produced
 
 - **Methods, quorum and assent:** the intended outcome of each case was written by hand from the specification, and a throwaway reference script recomputed the full result object and asserted that it matched. The script is not part of the repository: the corpus is checked for real when the two implementations of H3 and H4 must both agree with it.
 - **Byte-level vectors** (`jcs`, `cell_id`, `round`, `draw`, `chain`): computed with Python and recomputed independently with Node; all values matched.
-- **Boards:** generated with the real protocol flow (`@cloudflare/blindrsa-ts` on the client side, OpenSSL raw RSA on the server side), with every signature checked as standard RSASSA-PSS. Hashes, cells, tallies, counters, results and receipts were rechecked with Python.
+- **Boards `board-010` … `board-017`:** generated with the Python verifier's test fixtures and checked with both implementations.
+- **Boards `board-001` … `board-009`:** generated with the real protocol flow (`@cloudflare/blindrsa-ts` on the client side, OpenSSL raw RSA on the server side), with every signature checked as standard RSASSA-PSS. Hashes, cells, tallies, counters, results and receipts were rechecked with Python.
 
 If a reviewer finds a case they disagree with, the case is wrong until proven otherwise: open an issue citing its `id`.

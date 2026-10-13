@@ -221,7 +221,7 @@ Published next to the board, and the only place with names.
 
 ## 7. Roll-call list
 
-For `roll_call` votings: `{"type": "roll_call", "version": 1, "voting_id": "…", "votes": [{"member": "<name>", "value": "<value>"}]}`, sorted by `member`. Published next to the board, with the same retention as the candidates table.
+For `roll_call` votings: `{"type": "roll_call", "version": 1, "voting_id": "…", "votes": [{"answers": {"<cell key>": "<value>"}, "member": "<name>", "right": 0}]}`, sorted by `member` and then `right`. `right` is 0 for the member's own vote and 1, 2… for the proxy votes they hold; `answers` is a complete ballot (§3). Published next to the board, with the same retention as the candidates table.
 
 ## 8. Assent record
 
@@ -340,4 +340,4 @@ Published in the data repository when a voting opens, before any credential is i
 }
 ```
 
-`closes_at` is the fixed closing time of a `final_link` voting, or `null` for `live`. `draw_commitment` is the commitment of the tie-break draw ([`draws.md`](draws.md) §5) or `null`; `draw_round` is its drand round for `final_link` votings, or `null`. `key` is `null` unless `mode` is `secret`. The opening notice is not part of the hash chain; a verifier MUST check that `rules`, `rules_hash`, `key`, `quorum` and the draw commitment and round of the board equal those of the opening notice and, for `final_link`, that `closed_at` equals `closes_at`.
+`closes_at` is the fixed closing time of a `final_link` voting, or `null` for `live`. `draw_commitment` is the commitment of the tie-break draw ([`draws.md`](draws.md) §5) or `null`; `draw_round` is its drand round for `final_link` votings, or `null`. `key` is `null` unless `mode` is `secret`. The opening notice is not part of the hash chain; a verifier MUST check that `rules`, `rules_hash`, `key`, `quorum` and the draw commitment and round of the board equal those of the opening notice and, for `final_link`, that `closed_at` equals `closes_at`. An annulled board MAY have `draw: null` even if the opening notice has a draw commitment: the voting was annulled before the draw; the commitment and round are then not compared.

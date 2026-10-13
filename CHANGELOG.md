@@ -21,6 +21,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
   - officials' view and projection view;
   - Spanish and English, about 98 KB against a 200 KB budget;
   - Playwright test of the full flow with axe (WCAG 2.2 AA) on every screen.
+- Rest of the catalogue (milestone H8):
+  - committee posts and limited vote, with the officials' seed committed at creation and the drand round fixed in public before it exists;
+  - roll-call votings with the published roll-call list, and manual and paper counts entered by the officials;
+  - in-room tie draws and an election assistant that proposes the run-off, the repetition or the draw;
+  - assent by e-mail with objections and an automatic close;
+  - export of the minutes (Markdown and JSON);
+  - the officials' and voters' screens for all of it, in Spanish and English;
+  - eight new board cases (`board-010` … `board-017`) and a browser test that uses a real drand round.
 - E-mail and publication to a local folder, for development and browser tests.
 - Test that reception writes only the ballot and the spent token, with no log, cookie, time or order, and end-to-end test where `tools/verify` accepts the data repository published by the API.
 - Fictitious example profile `profiles/example.json` for development and tests.
@@ -28,6 +36,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Changed
 - The server's blind signature uses OpenSSL (`node:crypto`) instead of the JavaScript big-integer code in blindrsa-ts, which took ~0.9 s per signature (ADR-0002).
+- The roll-call list records `right` and the full `answers` of each ballot (`spec/formats.md` §7). An annulled board may omit its draw even if the opening notice committed to one (`spec/formats.md` §12).
 - The rules of a voting are fixed when it opens, not when it is created, since they include the quorum of the call in force (`spec/formats.md` §4, `spec/protocol.md` §3).
 - `packages/core` imports use `.ts` extensions, so Node runs the core and the API without a build step.
 - The drand domain separation tag is confirmed against a real round (`spec/draws.md` §1).

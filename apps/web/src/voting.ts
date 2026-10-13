@@ -13,7 +13,7 @@ const hex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "
 const bytes = (h: string) => new Uint8Array(h.match(/../g)!.map((x) => parseInt(x, 16)));
 
 export interface Opening {
-  key: { fingerprint: string; public_key: string };
+  key: { fingerprint: string; public_key: string } | null;
   opened_at: string;
   closes_at: string | null;
   rules: { method: string; timing: string };
@@ -24,12 +24,17 @@ export interface VotingView {
   id: string;
   meeting_id: string;
   title: string;
-  status: "created" | "awaiting_pages" | "open" | "closed" | "annulled";
-  method: "yes_no" | "single_winner";
+  status: "created" | "awaiting_pages" | "open" | "awaiting_draw" | "closed" | "annulled";
+  method: "yes_no" | "single_winner" | "posts" | "limited_vote";
+  mode: "secret" | "roll_call" | "manual" | "paper";
+  timing: "live" | "final_link";
+  draw_commitment: string | null;
+  draw_round: number | null;
+  my_nominal_votes: number[];
   params: Record<string, unknown>;
   opening: Opening | null;
   board: (Board & { result: Record<string, unknown> | null }) | null;
-  candidates: { candidates: { id: string; name: string }[] } | null;
+  candidates: { candidates: { id: string; name: string }[]; posts: { id: string; name: string }[] } | null;
   my_rights: number;
 }
 
@@ -61,15 +66,15 @@ const k = (kind: string, votingId: string, right?: number) => `pv:${kind}:${voti
  */
 async function checkKey(v: VotingView): Promise<string> {
   const opening = v.opening!;
-  const fp = keyFingerprint(opening.key.public_key);
-  if (fp !== opening.key.fingerprint) throw new KeyMismatchError();
+  const fp = keyFingerprint(opening.key!.public_key);
+  if (fp !== opening.key!.fingerprint) throw new KeyMismatchError();
   const data = cfg().data;
   if (data !== null) {
     const path = `${opening.opened_at.slice(0, 10).replaceAll("-", "/")}/${v.id}.opening.json`;
     const res = await fetch(`${data}/${path}`, { cache: "no-store", credentials: "omit" }).catch(() => null);
     if (res?.ok) {
       const published = (await res.json()) as Opening;
-      if (published.key.public_key !== opening.key.public_key) throw new KeyMismatchError();
+      if (published.key?.public_key !== opening.key!.public_key) throw new KeyMismatchError();
     } else if (opening.closes_at !== null) throw new KeyMismatchError();
   }
   save(k("fp", v.id), fp);
@@ -90,7 +95,7 @@ export interface Credential {
 /** Gets one credential per right, resuming any request interrupted before. */
 export async function ensureCredentials(v: VotingView): Promise<Credential[]> {
   if (load(k("fp", v.id)) === null) await checkKey(v);
-  const pk = await crypto.subtle.importKey("spki", bytes(v.opening!.key.public_key), { name: "RSA-PSS", hash: "SHA-384" }, true, ["verify"]);
+  const pk = await crypto.subtle.importKey("spki", bytes(v.opening!.key!.public_key), { name: "RSA-PSS", hash: "SHA-384" }, true, ["verify"]);
   const creds: Credential[] = [];
   for (let j = 0; j < v.my_rights; j++) {
     const done = load<Credential>(k("cred", v.id, j));

@@ -27,7 +27,8 @@ export function Projection() {
           <h2>
             {v.title} <span class={`badge badge-${v.status}`}>{statusLabel(v.status)}</span>
           </h2>
-          {v.opening && <Fingerprint value={v.opening.key.fingerprint} />}
+          {v.opening?.key && <Fingerprint value={v.opening.key.fingerprint} />}
+          {v.draw_commitment && v.draw_round && v.status !== "closed" && <p>{t("draw_info", { c: v.draw_commitment.slice(0, 16), r: v.draw_round })}</p>}
           {v.status === "closed" && <Result v={v} />}
         </article>
       )}

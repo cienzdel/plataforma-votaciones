@@ -274,3 +274,13 @@ Formato: `[Bloque N] Decisión — Justificación`. Las decisiones aplazadas se 
 - [H7] Las papeletas de los votos delegados se titulan «Voto delegado 1, 2…», sin el nombre de quien delegó. — La foto de presentes solo guarda el número de derechos; mostrar nombres exigiría guardar en la votación qué delegación da cada derecho. Se puede añadir si la mesa lo pide.
 - [H7] La credencial pendiente, la credencial y el voto se guardan en el navegador antes de enviarse. Si el navegador no permite guardar (ventana privada), la interfaz no continúa y lo explica. — Así no se pierde un voto por recargar la página.
 - [H7] Para las pruebas con navegador, la API admite correo y publicación en una carpeta local (`PV_MAIL=directory`, `PV_PUBLISH=directory`), solo para desarrollo. — Permite leer los códigos de acceso sin abrir ningún punto de acceso nuevo en la API.
+
+## Hito H8 (2026-10-13)
+
+- [H8] La semilla de cada sorteo la genera el navegador de la mesa, que solo envía el compromiso; la semilla se guarda en ese navegador y se ofrece para descargar. — Así el servidor nunca la conoce antes de tiempo; la copia descargada evita perder el sorteo si se cambia de dispositivo.
+- [H8] Una votación que necesita orden de desempate queda «esperando el sorteo» al cerrar, hasta que existe la ronda de drand y la mesa revela la semilla. Si se anula antes, el tablón se publica sin sorteo. — Sigue `spec/draws.md` §5; anular no debe depender de drand.
+- [H8] El servidor no verifica la firma BLS de drand; la comprueban los verificadores (`tools/verify` lo hace siempre). — No hay una librería BLS en TypeScript entre las dependencias aprobadas; la verificación independiente es la que da garantías.
+- [H8] La lista nominal recoge cada derecho (`right`) y la papeleta completa (`answers`), no un único valor. — Hace falta para las votaciones nominales con delegaciones y con varias casillas (vocalías).
+- [H8] El recuento manual y en papel solo existe en directo, y las votaciones sin clave no esperan a GitHub Pages. — La espera protege la clave de las votaciones secretas; sin clave no hay nada que comprobar.
+- [H8] El asistente de cargos propone la segunda vuelta, la repetición o el sorteo, y la mesa confirma. **Pendiente:** retirar automáticamente de los cargos siguientes a quien ya ha sido elegido; ahora la mesa lo hace al crear cada votación.
+- [H8] Una persona solo puede pedir sus credenciales desde un navegador; si lo intenta desde otro, la interfaz lo explica. — Es la regla de una credencial por derecho del protocolo.

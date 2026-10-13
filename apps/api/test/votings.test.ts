@@ -166,7 +166,7 @@ describe("secret voting, live", () => {
       timing: "live",
       candidates: [{ id: "c1", name: "Persona Candidata 1" }, { id: "c2", name: "Persona Candidata 2" }],
     };
-    expect((await t.call("POST", "/votings", { meeting_id: t.meetingId, title: "x", ...sw, candidates: [] }, t.official)).body).toEqual({ error: "candidate_names_required" });
+    expect((await t.call("POST", "/votings", { meeting_id: t.meetingId, title: "x", ...sw, candidates: [] }, t.official)).body).toEqual({ error: "names_required" });
     expect((await t.call("POST", "/votings", { meeting_id: t.meetingId, title: "x", ...sw, timing: "final_link" }, t.official)).body).toEqual({ error: "elections_are_live" });
     const first = await t.createAndOpen(sw);
     await cast(t.reception, first.id, await t.credential(first.id, t.tokens.p2), { choice: "c2" });
@@ -188,7 +188,10 @@ describe("secret voting, live", () => {
   it("validates creation and the order of operations", async () => {
     const t = await session();
     const post = (b: Record<string, unknown>) => t.call("POST", "/votings", { meeting_id: t.meetingId, title: "x", ...YES_NO, ...b }, t.official);
-    expect((await post({ method: "posts" })).body).toEqual({ error: "unsupported_method" });
+    expect((await post({ method: "borda" })).body).toEqual({ error: "unsupported_method" });
+    expect((await post({ mode: "postal" })).body).toEqual({ error: "invalid_mode" });
+    expect((await post({ mode: "paper", timing: "final_link", closes_at: "2030-01-01T00:00:00Z" })).body).toEqual({ error: "manual_counts_are_live" });
+    expect((await post({ draw_commitment: "00".repeat(32) })).body).toEqual({ error: "invalid_draw_commitment" });
     expect((await post({ params: { base: "voters", rule: "simple" } })).body).toEqual({ error: "invalid_params" });
     expect((await post({ timing: "later" })).body).toEqual({ error: "invalid_timing" });
     expect((await post({ timing: "final_link", closes_at: "2020-01-01T00:00:00Z" })).body).toEqual({ error: "invalid_closes_at" });

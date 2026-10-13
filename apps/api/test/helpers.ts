@@ -17,13 +17,17 @@ export function census(n: number, degree = (i: number) => (i % 2 === 0 ? "bio" :
   return ["name,email,degrees", `${FIRST.name},${FIRST.email},bio`, ...rows].join("\n");
 }
 
+/** Real quicknet rounds the fake drand knows (also used by spec/cases/draw-001). */
+export const DRAND_ROUND = 33026212;
+export const drandRounds = new Map([[DRAND_ROUND, "9791658769c0476a1f88d6b08366504f486ce0a883e4fb17e19b666f39e34f138bb4c480d84f57378d5e9d6694996f92"]]);
+
 export function setup(trace?: (sql: string) => void) {
   const clock = { t: Date.UTC(2027, 2, 10, 17, 0) };
   const mailer = new MemoryMailer();
   const publisher = new MemoryPublisher();
   const deps: Deps = {
     db: openDb(":memory:", trace), mailer, profile: PROFILE, now: () => clock.t, webOrigin: "https://vote.example.org",
-    publisher, masterKey: Buffer.alloc(32, 7),
+    publisher, masterKey: Buffer.alloc(32, 7), drand: async (round) => drandRounds.get(round) ?? null,
   };
   ensureFirstOfficial(deps, FIRST);
   const app = createApp(deps);

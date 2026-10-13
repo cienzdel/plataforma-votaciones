@@ -85,6 +85,41 @@ export function Result({ v }: { v: VotingView }) {
   if (!r) return null;
   const name = (id: unknown) => v.candidates?.candidates.find((c) => c.id === id)?.name ?? String(id);
   const names = (ids: unknown) => ((ids as string[] | undefined) ?? []).map(name).join(", ");
+  if (v.method === "posts") {
+    const post = (id: string) => v.candidates?.posts.find((p) => p.id === id)?.name ?? id;
+    return (
+      <section class="result" aria-label={t("result")}>
+        <table>
+          <tbody>
+            {Object.entries(r.assignment as Record<string, string | null>).map(([p, c]) => (
+              <tr key={p}>
+                <th scope="row">{post(p)}</th>
+                <td>{c === null ? t("outcome_vacant") : name(c)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    );
+  }
+  if (v.method === "limited_vote") {
+    const elected = r.elected as string[];
+    return (
+      <section class="result" aria-label={t("result")}>
+        <p class="headline">{t("outcome_elected", { name: names(elected) })}</p>
+        <table>
+          <tbody>
+            {(r.ranking as { cand: string; votes: number }[]).map((x) => (
+              <tr key={x.cand}>
+                <th scope="row">{name(x.cand)}</th>
+                <td>{x.votes}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    );
+  }
   const outcome = String(r.outcome);
   let headline: string;
   if (v.method === "yes_no") headline = t(outcome === "approved" ? "outcome_approved" : "outcome_rejected");
@@ -114,5 +149,15 @@ export function Result({ v }: { v: VotingView }) {
         </tbody>
       </table>
     </section>
+  );
+}
+
+/** The error or confirmation of an action. */
+export function Outcome({ a }: { a: ReturnType<typeof useAction> }) {
+  return (
+    <>
+      {a.error && <Status kind="error">{errorText(a.error)}</Status>}
+      {a.message && <Status kind="ok">{a.message}</Status>}
+    </>
   );
 }

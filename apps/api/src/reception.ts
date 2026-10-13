@@ -37,7 +37,7 @@ export function receptionApp(deps: Deps): Hono {
     // 1. The voting exists, is open and is secret.
     const v = typeof b.voting_id === "string" ? deps.db.select().from(voting).where(eq(voting.id, b.voting_id)).get() : undefined;
     if (v === undefined) throw new HttpError(404, "voting_not_found");
-    if (v.status !== "open") throw new HttpError(409, "voting_not_open");
+    if (v.status !== "open" || (v.rules as { mode: string }).mode !== "secret") throw new HttpError(409, "voting_not_open");
     // 2. Token of this voting. 3. Valid signature. 4. Ballot secret.
     if (!isHex(b.token, 80) || b.token.slice(64, 96) !== v.id) throw new HttpError(400, "invalid_token");
     const key = deps.db.select().from(signingKey).where(eq(signingKey.votingId, v.id)).get()!;

@@ -194,6 +194,7 @@ function checkFormat(b: unknown): { board: Board; spec: CellSpec; candidates: st
 
 /** Step 2: what the opening notice fixed in public. */
 function checkOpening(b: Board, o: unknown): void {
+  const skipDraw = b.status === "annulled" && b.draw === null;
   const ok =
     isObject(o) &&
     o.type === "opening" &&
@@ -202,9 +203,10 @@ function checkOpening(b: Board, o: unknown): void {
     o.rules_hash === b.rules_hash &&
     jsonEqual(o.key, b.key) &&
     jsonEqual(o.quorum, b.quorum) &&
-    o.draw_commitment === (b.draw?.commitment ?? null) &&
+    // An annulled voting may be published without its draw (spec/formats.md §12).
+    (skipDraw || o.draw_commitment === (b.draw?.commitment ?? null)) &&
     (b.rules.timing === "final_link"
-      ? o.closes_at === b.closed_at && o.draw_round === (b.draw?.drand.round ?? null)
+      ? o.closes_at === b.closed_at && (skipDraw || o.draw_round === (b.draw?.drand.round ?? null))
       : o.closes_at === null && o.draw_round === null);
   fail(ok, "opening_mismatch");
 }

@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import type { Db } from "./db/index.ts";
+import type { DrandFetcher } from "./drand.ts";
 import type { Mailer } from "./mail/index.ts";
 import type { Profile } from "./profile.ts";
 import type { Publisher } from "./publisher.ts";
@@ -16,6 +17,8 @@ export interface Deps {
   publisher: Publisher;
   /** 32-byte key that encrypts the voting private keys at rest (ADR-0003). */
   masterKey: Buffer;
+  /** Fetches drand quicknet rounds (spec/draws.md). */
+  drand: DrandFetcher;
 }
 
 /** An error returned to the client as `{"error": code}` with an HTTP status. */

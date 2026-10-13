@@ -34,5 +34,12 @@ Las variables de entorno están descritas en · Environment variables are descri
 | `POST /votings/issue` | member | One blind signature per right (spec/protocol.md §5). |
 | `POST /votings`, `…/open`, `…/activate`, `…/close`, `…/annul`, `…/publish` | mesa | Create, open (with `force_reason`, `wait_for_pages`), open once Pages serves the notice, close, annul, retry publication. |
 | `POST /cast` (reception origin) | anyone, no session | Receives a ballot (spec/protocol.md §6). Rejects requests with a session or cookie. |
+| `POST /votings/:id/nominal` | member | A named vote, one per right (`roll_call`). |
+| `POST /votings/:id/tallies`, `…/reveal`, `GET …/next` | mesa | Totals of `manual` and `paper` votings; reveal the draw seed; the election assistant's proposal. |
+| `POST /draws`, `POST /draws/:id/reveal`, `GET /draws` | mesa / member | In-room tie draws (spec/draws.md §6). |
+| `GET /assents`, `POST`/`DELETE /assents/:id/objection` | member | Assent proposals and objections. |
+| `POST /assents`, `GET /assents/:id/objections` | mesa | Send a proposal; names of the objections for the minutes. |
+| `GET /meetings/:id/minutes` | mesa | Minutes in Markdown, or the boards with `?format=json`. |
+| `GET /profile` | anyone | The profile in force. |
 
 Decisión de diseño · Design decision: [0004-desacople-emision-envio.md](../../PLAN/adr/0004-desacople-emision-envio.md), [0013-autenticacion-codigo-correo.md](../../PLAN/adr/0013-autenticacion-codigo-correo.md), [0016-stack.md](../../PLAN/adr/0016-stack.md)

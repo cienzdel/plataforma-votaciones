@@ -58,7 +58,7 @@ def run(kind: str, i: dict[str, Any]) -> Any:
 
 
 def test_corpus_size() -> None:
-    assert len(ALL) == 87
+    assert len(ALL) == 95
 
 
 @pytest.mark.parametrize("case", ALL, ids=[c["id"] for c in ALL])

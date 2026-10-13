@@ -105,7 +105,8 @@ export const voting = sqliteTable("voting", {
   id: text("id").primaryKey(),
   meetingId: text("meeting_id").notNull().references(() => meeting.id),
   title: text("title").notNull(),
-  status: text("status", { enum: ["created", "awaiting_pages", "open", "closed", "annulled"] }).notNull(),
+  /** `awaiting_draw`: closed to votes, waiting for the drand round and the seed (spec/draws.md §5). */
+  status: text("status", { enum: ["created", "awaiting_pages", "open", "awaiting_draw", "closed", "annulled"] }).notNull(),
   /** Effective rules (spec/formats.md §4) and their hash. */
   rules: text("rules", { mode: "json" }).$type<Record<string, unknown>>().notNull(),
   rulesHash: text("rules_hash").notNull(),
@@ -124,7 +125,66 @@ export const voting = sqliteTable("voting", {
   annulReason: text("annul_reason"),
   /** Set when the board is in the data repository; ballots are erased only after that. */
   publishedAt: integer("published_at"),
+  /** Tie-break draw: commitment of the officials' seed and the drand round, fixed in public in advance. */
+  drawCommitment: text("draw_commitment"),
+  drawRound: integer("draw_round"),
+  /** `manual` and `paper`: tallies and number of ballots entered by the officials. */
+  manualTallies: text("manual_tallies", { mode: "json" }).$type<Record<string, Record<string, number>>>(),
+  manualReceived: integer("manual_received"),
+  /** `roll_call`: the roll-call list (spec/formats.md §7), fixed at closing. */
+  rollCall: text("roll_call", { mode: "json" }).$type<Record<string, unknown>>(),
 });
+
+/** Named votes of `roll_call` votings, one per right. Public by nature; retained like personal data. */
+export const nominalVote = sqliteTable(
+  "nominal_vote",
+  {
+    votingId: text("voting_id").notNull().references(() => voting.id),
+    memberId: text("member_id").notNull().references(() => member.id),
+    right: integer("right").notNull(),
+    answers: text("answers", { mode: "json" }).$type<Record<string, string>>().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.votingId, t.memberId, t.right] })],
+);
+
+/** Stand-alone draws for in-room ties (spec/draws.md §6). */
+export const tieDraw = sqliteTable("tie_draw", {
+  id: text("id").primaryKey(),
+  votingId: text("voting_id").notNull().references(() => voting.id),
+  commitment: text("commitment").notNull(),
+  /** RFC 3339 time of the commitment; the round is the first 30 s after it. */
+  after: text("after").notNull(),
+  round: integer("round").notNull(),
+  items: text("items", { mode: "json" }).$type<string[]>().notNull(),
+  spots: integer("spots").notNull(),
+  document: text("document", { mode: "json" }).$type<Record<string, unknown>>(),
+  publishedAt: integer("published_at"),
+});
+
+/** Assent by e-mail (spec/methods.md §7, spec/formats.md §8). */
+export const assent = sqliteTable("assent", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  text: text("text").notNull(),
+  electorateFilter: text("electorate_filter"),
+  members: integer("members").notNull(),
+  sentAt: integer("sent_at").notNull(),
+  closesAt: integer("closes_at").notNull(),
+  status: text("status", { enum: ["open", "closed"] }).notNull(),
+  record: text("record", { mode: "json" }).$type<Record<string, unknown>>(),
+  publishedAt: integer("published_at"),
+});
+
+export const assentObjection = sqliteTable(
+  "assent_objection",
+  {
+    assentId: text("assent_id").notNull().references(() => assent.id),
+    memberId: text("member_id").notNull().references(() => member.id),
+    at: integer("at").notNull(),
+    withdrawnAt: integer("withdrawn_at"),
+  },
+  (t) => [primaryKey({ columns: [t.assentId, t.memberId] })],
+);
 
 /** Voting rights frozen at opening: `own` (0 or 1) plus proxies. */
 export const electorateSnapshot = sqliteTable(

@@ -253,9 +253,11 @@ def verify_board(
         o = opening if type(opening) is dict else {}
         ok = o.get("type") == "opening" and o.get("voting_id") == b["voting_id"]
         ok = ok and all(same(o.get(k), b[k]) for k in ("rules", "rules_hash", "key", "quorum"))
-        ok = ok and o.get("draw_commitment", 0) == (draw["commitment"] if draw else None)
+        # An annulled voting may be published without its draw (spec/formats.md §12).
+        skip_draw = b["status"] == "annulled" and draw is None
+        ok = ok and (skip_draw or o.get("draw_commitment", 0) == (draw["commitment"] if draw else None))
         if r["timing"] == "final_link":
-            ok = ok and o.get("closes_at") == b["closed_at"] and o.get("draw_round", 0) == (draw["drand"]["round"] if draw else None)
+            ok = ok and o.get("closes_at") == b["closed_at"] and (skip_draw or o.get("draw_round", 0) == (draw["drand"]["round"] if draw else None))
         else:
             ok = ok and o.get("closes_at", 0) is None and o.get("draw_round", 0) is None
         check(ok, "opening_mismatch")

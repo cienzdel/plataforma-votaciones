@@ -1,8 +1,9 @@
 import { useState } from "preact/hooks";
 import { api } from "../api.ts";
 import { getLang, t, type Key } from "../i18n.ts";
-import { errorText, Fingerprint, Result, Status, statusLabel, useAction, usePoll } from "../ui.tsx";
+import { errorText, Outcome, Status, useAction, usePoll } from "../ui.tsx";
 import type { VotingView } from "../voting.ts";
+import { AssentsPanel, MinutesPanel, VotingPanel } from "./Votings.tsx";
 
 interface Member {
   id: string;
@@ -33,7 +34,7 @@ interface MeetingDetail {
   second_call_available_at: number | null;
 }
 
-const TABS = ["meeting", "attendance", "proxies", "votings", "census", "roles", "assisted"] as const;
+const TABS = ["meeting", "attendance", "proxies", "votings", "assents", "census", "roles", "assisted", "minutes"] as const;
 type Tab = (typeof TABS)[number];
 
 export function Officials() {
@@ -63,6 +64,8 @@ export function Officials() {
       {tab === "attendance" && <AttendancePanel {...props} />}
       {tab === "proxies" && <ProxyPanel {...props} />}
       {tab === "votings" && <VotingPanel {...props} />}
+      {tab === "assents" && <AssentsPanel {...props} />}
+      {tab === "minutes" && <MinutesPanel {...props} />}
       {tab === "census" && <CensusPanel {...props} />}
       {tab === "roles" && <RolesPanel {...props} />}
       {tab === "assisted" && <AssistedPanel {...props} />}
@@ -70,20 +73,11 @@ export function Officials() {
   );
 }
 
-interface PanelProps {
+export interface PanelProps {
   meeting: MeetingDetail | null;
   members: Member[];
   votings: VotingView[];
   reload: () => void;
-}
-
-function Outcome({ a }: { a: ReturnType<typeof useAction> }) {
-  return (
-    <>
-      {a.error && <Status kind="error">{errorText(a.error)}</Status>}
-      {a.message && <Status kind="ok">{a.message}</Status>}
-    </>
-  );
 }
 
 export function QuorumLine({ q }: { q: Quorum }) {
@@ -228,130 +222,6 @@ function ProxyPanel({ meeting, members, reload }: PanelProps) {
           </li>
         ))}
       </ul>
-    </section>
-  );
-}
-
-function VotingPanel({ meeting, votings, reload }: PanelProps) {
-  const a = useAction();
-  const [form, setForm] = useState({ title: "", method: "yes_no", rule: "simple", base: "cast", timing: "live", closes_at: "", filter: "", min: "", candidates: "" });
-  const [reasons, setReasons] = useState<Record<string, string>>({});
-  const [wait, setWait] = useState(false);
-  if (!meeting || meeting.status !== "open") return <Status>{t("no_meeting")}</Status>;
-  const field = (k: keyof typeof form) => ({ value: form[k], onInput: (e: Event) => setForm({ ...form, [k]: (e.currentTarget as HTMLInputElement).value }) });
-
-  const create = (e: Event) => {
-    e.preventDefault();
-    void a.run(async () => {
-      const names = form.candidates.split("\n").map((x) => x.trim()).filter(Boolean);
-      const ids = names.map((_, i) => `c${i + 1}`);
-      const rule = form.rule === "two_thirds" ? [2, 3] : form.rule;
-      const params =
-        form.method === "yes_no"
-          ? { base: form.base, rule }
-          : { candidates: ids, stage: "first", attempt: 0, repetitions: 1, against_all_blocks: false, subject: "person" };
-      await api("POST", "/votings", {
-        meeting_id: meeting.id,
-        title: form.title,
-        method: form.method,
-        params,
-        timing: form.timing,
-        closes_at: form.timing === "final_link" ? new Date(form.closes_at).toISOString().replace(/\.\d{3}Z$/, "Z") : undefined,
-        electorate_filter: form.filter || null,
-        min_attendance: form.min === "half" ? [1, 2] : form.min === "third" ? [1, 3] : null,
-        candidates: names.map((n, i) => ({ id: ids[i], name: n })),
-      });
-      reload();
-      return t("done");
-    });
-  };
-  const act = (path: string, body?: unknown) => a.run(async () => (await api("POST", path, body ?? {}), reload()));
-
-  return (
-    <section aria-labelledby="h-votings">
-      <h2 id="h-votings">{t("tab_votings")}</h2>
-      {[...votings].reverse().map((v) => (
-        <article key={v.id} class="card" aria-label={v.title}>
-          <h3>
-            {v.title} <span class={`badge badge-${v.status}`}>{statusLabel(v.status)}</span>
-          </h3>
-          {v.opening && <Fingerprint value={v.opening.key.fingerprint} />}
-          {v.status === "created" && (
-            <div>
-              <label for={`force-${v.id}`}>{t("force_reason")}</label>
-              <input id={`force-${v.id}`} value={reasons[v.id] ?? ""} onInput={(e) => setReasons({ ...reasons, [v.id]: e.currentTarget.value })} />
-              <label class="option">
-                <input type="checkbox" checked={wait} onChange={(e) => setWait(e.currentTarget.checked)} /> {t("wait_pages")}
-              </label>
-              <button type="button" onClick={() => act(`/votings/${v.id}/open`, { force_reason: reasons[v.id] || undefined, wait_for_pages: wait })}>{t("open")}</button>
-            </div>
-          )}
-          {v.status === "awaiting_pages" && <button type="button" onClick={() => act(`/votings/${v.id}/activate`)}>{t("activate")}</button>}
-          {v.status === "open" && v.opening?.closes_at === null && <button type="button" onClick={() => act(`/votings/${v.id}/close`)}>{t("close")}</button>}
-          {(v.status === "created" || v.status === "open" || v.status === "awaiting_pages") && (
-            <div>
-              <label for={`annul-${v.id}`}>{t("annul_reason")}</label>
-              <input id={`annul-${v.id}`} value={reasons["a" + v.id] ?? ""} onInput={(e) => setReasons({ ...reasons, ["a" + v.id]: e.currentTarget.value })} />
-              <button type="button" onClick={() => act(`/votings/${v.id}/annul`, { reason: reasons["a" + v.id] })}>{t("annul")}</button>
-            </div>
-          )}
-          {v.status === "closed" && <Result v={v} />}
-        </article>
-      ))}
-      <form onSubmit={create} class="card">
-        <h3>{t("create")}</h3>
-        <label for="v-title">{t("voting_title")}</label>
-        <input id="v-title" required {...field("title")} />
-        <label for="v-method">{t("method")}</label>
-        <select id="v-method" {...field("method")}>
-          <option value="yes_no">{t("method_yes_no")}</option>
-          <option value="single_winner">{t("method_single_winner")}</option>
-        </select>
-        {form.method === "yes_no" ? (
-          <>
-            <label for="v-rule">{t("rule")}</label>
-            <select id="v-rule" {...field("rule")}>
-              <option value="simple">{t("rule_simple")}</option>
-              <option value="absolute">{t("rule_absolute")}</option>
-              <option value="two_thirds">{t("rule_two_thirds")}</option>
-            </select>
-            <label for="v-base">{t("base")}</label>
-            <select id="v-base" {...field("base")}>
-              {(["cast", "present", "present_plus_proxies", "members"] as const).map((b) => (
-                <option key={b} value={b}>
-                  {t(`base_${b}`)}
-                </option>
-              ))}
-            </select>
-            <label for="v-timing">{t("timing")}</label>
-            <select id="v-timing" {...field("timing")}>
-              <option value="live">{t("timing_live")}</option>
-              <option value="final_link">{t("timing_final_link")}</option>
-            </select>
-            {form.timing === "final_link" && (
-              <>
-                <label for="v-closes">{t("closes_at")}</label>
-                <input id="v-closes" type="datetime-local" required {...field("closes_at")} />
-              </>
-            )}
-          </>
-        ) : (
-          <>
-            <label for="v-cands">{t("candidates")}</label>
-            <textarea id="v-cands" required rows={4} {...field("candidates")} />
-          </>
-        )}
-        <label for="v-min">{t("min_attendance")}</label>
-        <select id="v-min" {...field("min")}>
-          <option value="">{t("none")}</option>
-          <option value="half">1/2</option>
-          <option value="third">1/3</option>
-        </select>
-        <label for="v-filter">{t("filter")}</label>
-        <input id="v-filter" {...field("filter")} placeholder={t("filter_all")} />
-        <button type="submit">{t("create")}</button>
-      </form>
-      <Outcome a={a} />
     </section>
   );
 }

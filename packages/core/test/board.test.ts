@@ -69,6 +69,7 @@ beforeAll(async () => {
     posts: await fixture(posts),
     rollCall: await fixture(rollCall),
     singleWinner: await fixture(singleWinner),
+    finalLink: await fixture({ timing: "final_link" }),
   };
 }, 60_000);
 
@@ -89,7 +90,7 @@ async function errorOf(name: string, mutate: Mutation, chain = true) {
 }
 
 describe("verifyBoard: valid boards", () => {
-  it.each(["secret", "limitedVote", "posts", "rollCall", "singleWinner"])("%s", async (name) => {
+  it.each(["secret", "limitedVote", "posts", "rollCall", "singleWinner", "finalLink"])("%s", async (name) => {
     const f = base[name]!;
     expect(await verifyBoard(f)).toEqual({ valid: true, result: f.board.result });
   });
@@ -100,9 +101,8 @@ describe("verifyBoard: valid boards", () => {
         f.board.status = "annulled";
         f.board.annulment = { reason: "Wrong candidates" };
         f.board.result = null;
+        // Annulled before the draw: the opening notice keeps its commitment and round.
         f.board.draw = null;
-        f.opening.draw_commitment = null;
-        f.opening.draw_round = null;
       }),
     );
     expect(report).toEqual({ valid: true, result: null });

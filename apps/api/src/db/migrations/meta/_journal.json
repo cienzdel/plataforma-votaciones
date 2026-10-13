@@ -15,6 +15,13 @@
       "when": 1791903033082,
       "tag": "0001_secret_votings",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791904279317,
+      "tag": "0002_catalogue",
+      "breakpoints": true
     }
   ]
 }

@@ -35,6 +35,8 @@ async function login(browser: Browser, email: string): Promise<Page> {
   await page.getByLabel("Código de 8 cifras").fill(codeFor(email));
   await page.getByRole("button", { name: "Entrar" }).click();
   await expect(page.getByRole("button", { name: "Salir" })).toBeVisible();
+  // Saved for h8-catalogue.spec.ts: a new code for the same address is refused for a minute.
+  await page.context().storageState({ path: join(process.env.PV_E2E_DIR!, `state-${email}.json`) });
   return page;
 }
 
@@ -129,4 +131,6 @@ test("officials, three voters and a proxy vote, accessible in Spanish and Englis
   await expect(dos.getByText("Comprobado: tu voto está en el tablón")).toBeVisible({ timeout: 30_000 });
   await expect(screen.getByText("Aprobada")).toBeVisible({ timeout: 30_000 });
   await axe(uno, "result");
+  // Close every tab: an open tab would keep asking for credentials in the next test.
+  for (const context of browser.contexts()) await context.close();
 });

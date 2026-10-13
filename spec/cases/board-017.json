@@ -1,0 +1,130 @@
+{
+  "id": "board-017",
+  "kind": "board_error",
+  "title": "Roll-call totals do not add up",
+  "explanation": "In modes without cells, every cell must add up to the number of ballots received.",
+  "input": {
+    "opening": {
+      "closes_at": null,
+      "draw_commitment": null,
+      "draw_round": null,
+      "key": null,
+      "opened_at": "2023-01-01T00:00:00Z",
+      "quorum": {
+        "forced": null,
+        "required": 4,
+        "met": true,
+        "min_attendance": null
+      },
+      "rules": {
+        "electorate_filter": null,
+        "method": "yes_no",
+        "min_attendance": null,
+        "mode": "roll_call",
+        "params": {
+          "base": "cast",
+          "rule": "simple"
+        },
+        "profile": {
+          "hash": "f3d7bd44c2a63f3fdc3707852e54a5734fea1ef6675d74e181652f09bcd3e30a",
+          "id": "example",
+          "version": "0.1.0"
+        },
+        "quorum": [
+          1,
+          3
+        ],
+        "timing": "live"
+      },
+      "rules_hash": "b7dc3b6b8032ebc308ddfd4069cbec498df821a0cd30922fc32929d9080b5fc2",
+      "title": "Example committee",
+      "type": "opening",
+      "version": 1,
+      "voting_id": "11111111111111111111111111111111"
+    },
+    "board": {
+      "candidates_hash": null,
+      "cells": null,
+      "closed_at": "2026-10-13T08:59:30Z",
+      "counters": {
+        "issued": null,
+        "members": 12,
+        "present": 6,
+        "proxies": 1,
+        "received": 6,
+        "rights": 7,
+        "session_members": 12,
+        "session_present": 6
+      },
+      "draw": null,
+      "key": null,
+      "opened_at": "2023-01-01T00:00:00Z",
+      "participation": null,
+      "quorum": {
+        "forced": null,
+        "required": 4,
+        "met": true,
+        "min_attendance": null
+      },
+      "result": {
+        "abstain": 1,
+        "against": 2,
+        "blank": 0,
+        "for": 3,
+        "cast": 5,
+        "base": 5,
+        "outcome": "approved"
+      },
+      "roll_call_hash": "b3ce27409961fd52e8b58978f092daeb68c1c2dfd10ac54408e7286a22707b86",
+      "rules": {
+        "electorate_filter": null,
+        "method": "yes_no",
+        "min_attendance": null,
+        "mode": "roll_call",
+        "params": {
+          "base": "cast",
+          "rule": "simple"
+        },
+        "profile": {
+          "hash": "f3d7bd44c2a63f3fdc3707852e54a5734fea1ef6675d74e181652f09bcd3e30a",
+          "id": "example",
+          "version": "0.1.0"
+        },
+        "quorum": [
+          1,
+          3
+        ],
+        "timing": "live"
+      },
+      "rules_hash": "b7dc3b6b8032ebc308ddfd4069cbec498df821a0cd30922fc32929d9080b5fc2",
+      "status": "closed",
+      "tallies": {
+        "q": {
+          "abstain": 1,
+          "against": 2,
+          "blank": 0,
+          "for": 4
+        }
+      },
+      "title": "Example committee",
+      "type": "board",
+      "version": 1,
+      "voting_id": "11111111111111111111111111111111"
+    },
+    "chain": {
+      "records": [
+        {
+          "board": "3ca5e20b797380c812f32d65f6ed6fe34d3429af82d440d29bbed315c4a2a70b",
+          "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+          "record_hash": "e66d1f5e8b125e5be815dd7c728b1e90fbe331719f4b40010238270d849bc242",
+          "path": "example.board.json"
+        }
+      ],
+      "type": "chain",
+      "version": 1
+    }
+  },
+  "expected": {
+    "error": "tallies_mismatch"
+  }
+}

@@ -80,7 +80,7 @@ async function run(kind: string, input: Input): Promise<unknown> {
 
 describe("spec/cases corpus", () => {
   it("has all the cases", () => {
-    expect(cases.length).toBe(87);
+    expect(cases.length).toBe(95);
   });
   it.each(cases.map((c) => [c.id, c]))("%s", async (_id, c) => {
     expect(await run(c.kind, c.input)).toEqual(c.expected);
