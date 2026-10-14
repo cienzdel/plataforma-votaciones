@@ -46,7 +46,7 @@ jobs:
       - name: Encrypted backup
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-          OCI_COMPARTMENT_OCID: ${{ vars.OCI_COMPARTMENT_OCID }}
+          OCI_COMPARTMENT_OCID: ${{ vars.OCI_COMPARTMENT_OCID || secrets.OCI_TENANCY_OCID }}
           RECIPIENTS: ${{ vars.AGE_RECIPIENTS }}
         run: |
           ip=$(sh "infra/scripts/$PROVIDER.sh" ip)
@@ -71,7 +71,7 @@ jobs:
       - name: Stop the VM
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-          OCI_COMPARTMENT_OCID: ${{ vars.OCI_COMPARTMENT_OCID }}
+          OCI_COMPARTMENT_OCID: ${{ vars.OCI_COMPARTMENT_OCID || secrets.OCI_TENANCY_OCID }}
         run: sh "infra/scripts/$PROVIDER.sh" down
       - if: always()
         run: shred -u key ~/.oci/key.pem 2>/dev/null || true

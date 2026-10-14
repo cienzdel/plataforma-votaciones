@@ -45,7 +45,7 @@ Todas las cuentas se registran con el correo institucional del órgano (ADR-0022
 
 1. **VM provider**, one of:
    - **Oracle (free):** sign up choosing an **EU home region** (e.g. Madrid or Frankfurt) → variable `OCI_REGION`. In the console:
-     - create a VCN with internet connectivity and add ingress rules for TCP 80 and 443 to its public subnet's security list → variables `OCI_SUBNET_OCID`, `OCI_COMPARTMENT_OCID` and `OCI_AVAILABILITY_DOMAIN`;
+     - create a VCN with internet connectivity and add ingress rules for TCP 80 and 443 to its public subnet's security list → variables `OCI_SUBNET_OCID` and `OCI_AVAILABILITY_DOMAIN` (and `OCI_COMPARTMENT_OCID` only if you use a compartment other than the root one, the tenancy);
      - add an API key to your user → secrets `OCI_USER_OCID`, `OCI_TENANCY_OCID`, `OCI_FINGERPRINT` and `OCI_PRIVATE_KEY`.
    - **Hetzner (paid):** a project and an API token with read/write access to it → secret `HCLOUD_TOKEN`; variable `PV_PROVIDER=hetzner`.
 2. **Data repository:** a public repository with GitHub Pages enabled → variables `PV_DATA_REPOSITORY` (`owner/name`) and `PV_PAGES_URL`; a fine-grained token limited to that repository with *Contents: read and write* → secret `PV_DATA_TOKEN`.
