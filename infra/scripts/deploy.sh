@@ -7,6 +7,7 @@ ip=$1
 key=$2
 envfile=$3
 profile=$4
+[ -n "$ip" ] || { echo "deploy.sh: no IP address" >&2; exit 2; }
 user=${PV_SSH_USER:-root}
 sudo=""
 [ "$user" = root ] || sudo="sudo"

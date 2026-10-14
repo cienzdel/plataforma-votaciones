@@ -50,6 +50,7 @@ jobs:
           RECIPIENTS: ${{ vars.AGE_RECIPIENTS }}
         run: |
           ip=$(sh "infra/scripts/$PROVIDER.sh" ip)
+          if [ -z "$ip" ] || [ "$ip" = null ]; then echo "::error::the VM has no IP address (is it running?)"; exit 1; fi
           user=root
           sudo=""
           if [ "$PROVIDER" = oracle ]; then user=ubuntu; sudo=sudo; fi
