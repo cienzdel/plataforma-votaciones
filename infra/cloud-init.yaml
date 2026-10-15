@@ -11,6 +11,12 @@ packages:
   - git
 ssh_pwauth: false
 runcmd:
+  # 2 GB of swap, so that the smallest free VMs (1 GB of memory) can build the image.
+  - |
+    if [ ! -f /swapfile ]; then
+      fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+      echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    fi
   - systemctl enable --now docker
   # Oracle's Ubuntu images reject every port but 22 in iptables; open 80 and 443 (no-op elsewhere).
   - |

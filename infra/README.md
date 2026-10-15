@@ -91,7 +91,7 @@ docker compose -f infra/compose.yaml cp pv.db api:/data/pv.db
 
 **Sin probar · Not tested** (needs the accounts above): `oracle.sh`, `hetzner.sh`, `deploy.sh`, `cloud-init.yaml`, the workflows on GitHub, Let's Encrypt on sslip.io names. **[por verificar · to be verified]**:
 - the hcloud and OCI CLI versions pinned in the workflows, and the Hetzner server type name (`cx22`);
-- Oracle's free Arm capacity: the first creation can fail with "Out of host capacity" or 429; `oracle.sh` retries every 5 minutes for an hour (`PV_LAUNCH_ATTEMPTS`), and the workflow can be run again later;
+- Oracle's free Arm capacity: the first creation can fail with "Out of host capacity" or 429; on each attempt `oracle.sh` tries Arm 2 OCPU/12 GB, Arm 1 OCPU/6 GB and then the AMD micro (1 GB, with 2 GB of swap), retrying every 5 minutes for an hour (`PV_LAUNCH_ATTEMPTS`); whether the micro is enough for a real plenary is [to be verified];
 - whether Oracle keeps the VM's public IPv4 across stop and start (`up` works either way: it publishes the current address);
 - the major versions of the GitHub actions;
 - whether `sslip.io` is in the Public Suffix List, which affects Let's Encrypt rate limits.

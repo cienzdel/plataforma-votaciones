@@ -1,7 +1,8 @@
 #!/bin/sh
 # Oracle Cloud "Always Free" adapter for `up` and `down` (ADR-0017, amended): the free default.
-# One Ampere A1 VM in the tenancy's home region (chosen in the EU at sign-up). It is created once
-# and then only started and stopped: its boot volume keeps the data, so no snapshot is needed.
+# One Always Free VM in the tenancy's home region (chosen in the EU at sign-up): Arm if there is
+# capacity, otherwise the AMD micro. It is created once and then only started and stopped: its
+# boot volume keeps the data, so no snapshot is needed.
 # Needs the OCI CLI configured (~/.oci/config) and these variables:
 #   OCI_COMPARTMENT_OCID, OCI_SUBNET_OCID (public subnet), OCI_AVAILABILITY_DOMAIN
 #
@@ -23,25 +24,44 @@ case ${1:-} in
     key=$2
     id=$(instance_id)
     if [ -z "$id" ] || [ "$id" = "null" ]; then
-      # Newest Ubuntu 24.04 image for Arm in the region. Free shape: 2 OCPUs and 12 GB in total.
-      image=$(oci compute image list --compartment-id "$compartment" --operating-system "Canonical Ubuntu" \
-        --operating-system-version "24.04" --shape VM.Standard.A1.Flex --sort-by TIMECREATED --sort-order DESC \
-        --limit 1 --query 'data[0].id' --raw-output 2>/dev/null)
-      if [ -z "$image" ] || [ "$image" = null ]; then echo "oracle.sh: no Ubuntu 24.04 Arm image found" >&2; exit 1; fi
-      # Free Arm capacity is often exhausted ("Out of host capacity", or 429): retry for a while.
+      # Free Arm capacity is often exhausted ("Out of host capacity", or 429). Each attempt tries the
+      # Always Free shapes from largest to smallest: Arm 2 OCPU/12 GB, Arm 1 OCPU/6 GB, AMD micro 1 GB.
       attempt=1
-      until id=$(oci compute instance launch --compartment-id "$compartment" --availability-domain "$OCI_AVAILABILITY_DOMAIN" \
-        --display-name "$instance" --shape VM.Standard.A1.Flex --shape-config '{"ocpus": 2, "memoryInGBs": 12}' \
-        --image-id "$image" --subnet-id "$OCI_SUBNET_OCID" --assign-public-ip true \
-        --ssh-authorized-keys-file "$key" --user-data-file "$here/../cloud-init.yaml" \
-        --wait-for-state RUNNING --query 'data.id' --raw-output 2>/tmp/oci-launch.err); do
-        if [ "$attempt" -ge "${PV_LAUNCH_ATTEMPTS:-12}" ] || ! grep -qE 'Out of host capacity|TooManyRequests|InternalError' /tmp/oci-launch.err; then
-          cat /tmp/oci-launch.err >&2
-          exit 1
+      id=""
+      while [ -z "$id" ]; do
+        for shape in "VM.Standard.A1.Flex 2 12" "VM.Standard.A1.Flex 1 6" "VM.Standard.E2.1.Micro"; do
+          # shellcheck disable=SC2086 # split "shape ocpus memory" on purpose
+          set -- $shape
+          image=$(oci compute image list --compartment-id "$compartment" --operating-system "Canonical Ubuntu" \
+            --operating-system-version "24.04" --shape "$1" --sort-by TIMECREATED --sort-order DESC \
+            --limit 1 --query 'data[0].id' --raw-output 2>/dev/null)
+          if [ -z "$image" ] || [ "$image" = null ]; then continue; fi
+          config=""
+          if [ $# -eq 3 ]; then
+            config=/tmp/oci-shape.json
+            printf '{"ocpus": %s, "memoryInGBs": %s}\n' "$2" "$3" > "$config"
+          fi
+          if id=$(oci compute instance launch --compartment-id "$compartment" --availability-domain "$OCI_AVAILABILITY_DOMAIN" \
+            --display-name "$instance" --shape "$1" ${config:+--shape-config file://$config} \
+            --image-id "$image" --subnet-id "$OCI_SUBNET_OCID" --assign-public-ip true \
+            --ssh-authorized-keys-file "$key" --user-data-file "$here/../cloud-init.yaml" \
+            --wait-for-state RUNNING --query 'data.id' --raw-output 2>/tmp/oci-launch.err); then
+            echo "created $instance with shape $shape" >&2
+            break
+          fi
+          id=""
+          if ! grep -qE 'Out of host capacity|TooManyRequests|InternalError|LimitExceeded' /tmp/oci-launch.err; then
+            cat /tmp/oci-launch.err >&2
+            exit 1
+          fi
+          echo "no capacity for $shape" >&2
+        done
+        if [ -z "$id" ]; then
+          if [ "$attempt" -ge "${PV_LAUNCH_ATTEMPTS:-12}" ]; then cat /tmp/oci-launch.err >&2; exit 1; fi
+          echo "launch attempt $attempt found no capacity; retrying in 5 minutes" >&2
+          attempt=$((attempt + 1))
+          sleep 300
         fi
-        echo "launch attempt $attempt failed (capacity or rate limit); retrying in 5 minutes" >&2
-        attempt=$((attempt + 1))
-        sleep 300
       done
     else
       oci compute instance action --instance-id "$id" --action START --wait-for-state RUNNING >/dev/null
