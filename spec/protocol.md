@@ -31,7 +31,7 @@ These apply to every component on the voting machine, including the TLS proxy ([
 
 ## 4. Opening
 
-1. **Attendance snapshot.** The server freezes the list of present members who pass the filter and, for each, their number of voting rights: 1 plus one per valid proxy from a member who passes the filter. The counters `session_members`, `session_present`, `members`, `present`, `proxies` and `rights` are fixed now. For `final_link`, the snapshot is the attendance when the session was closed (profile parameter).
+1. **Attendance snapshot.** The server freezes the list of present members who pass the filter and, for each, their number of voting rights: 1 plus one per valid proxy from a member who passes the filter. The counters `session_members`, `session_present`, `members`, `present`, `proxies` and `rights` are fixed now. For `final_link` too, the snapshot is taken when the voting opens, since the opening notice fixes the quorum in public then. Whether the regulations instead require the attendance at the close of the session is an open point ([`README.md`](README.md)): that would need the quorum, the electorate and the issuance to wait for the session to close.
 2. **Quorum.** The server computes `quorum` ([`methods.md`](methods.md) §1.2). If it is not met, the officials can force the opening with a reason.
 3. **Key** (`secret` mode). The issuance service generates a fresh RSA key pair ([`formats.md`](formats.md) §2.1). The private key is stored encrypted with the environment's master key, so it survives a restart.
 4. **Opening notice.** The server publishes the opening notice ([`formats.md`](formats.md) §12) in the data repository.
