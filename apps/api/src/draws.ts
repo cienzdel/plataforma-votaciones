@@ -4,7 +4,7 @@
  * 30 s later, and the draw is computed once that round exists.
  */
 import { formatTimestamp, isHex, roundAt } from "@pv/core";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { requireMember, requireOfficial, type AuthEnv } from "./auth.ts";
 import { appendToChain, chainFile, datePath } from "./chain.ts";
@@ -48,14 +48,22 @@ export function drawRoutes(deps: Deps): Hono<AuthEnv> {
   app.post("/:id/reveal", async (c) => {
     const d = deps.db.select().from(tieDraw).where(eq(tieDraw.id, c.req.param("id"))).get();
     if (d === undefined) throw new HttpError(404, "draw_not_found");
-    if (d.document !== null) throw new HttpError(409, "already_revealed");
+    if (d.document !== null && d.publishedAt !== null) throw new HttpError(409, "already_revealed");
     const { seed } = await c.req.json<{ seed?: unknown }>();
+    if (d.document !== null) {
+      // Chained but its publication failed: publish it again, the chain names its file.
+      const path = `${datePath(Date.parse(d.after))}/${d.votingId}.tie.draw.json`;
+      await deps.publisher.publish([jsonFile(path, d.document), chainFile(deps)], `Tie draw for voting ${d.votingId}`);
+      deps.db.update(tieDraw).set({ publishedAt: deps.now() }).where(eq(tieDraw.id, d.id)).run();
+      return c.json(deps.db.select().from(tieDraw).where(eq(tieDraw.id, d.id)).get());
+    }
     const base = await drawDocument(deps, { votingId: d.votingId, commitment: d.commitment, round: d.round, seed: seed as string, items: d.items });
     const document = { ...base, purpose: "tie", round_rule: { after: d.after, delay_seconds: LIVE_DRAW_DELAY_S }, spots: d.spots, winners: (base.order as string[]).slice(0, d.spots) };
     const path = `${datePath(Date.parse(d.after))}/${d.votingId}.tie.draw.json`;
     deps.db.transaction((tx) => {
+      // Two overlapping reveals must not chain the draw twice.
+      if (tx.update(tieDraw).set({ document }).where(and(eq(tieDraw.id, d.id), isNull(tieDraw.document))).run().changes === 0) throw new HttpError(409, "already_revealed");
       appendToChain(tx, document, path);
-      tx.update(tieDraw).set({ document }).where(eq(tieDraw.id, d.id)).run();
     });
     await deps.publisher.publish([jsonFile(path, document), chainFile(deps)], `Tie draw for voting ${d.votingId}`);
     deps.db.update(tieDraw).set({ publishedAt: deps.now() }).where(eq(tieDraw.id, d.id)).run();

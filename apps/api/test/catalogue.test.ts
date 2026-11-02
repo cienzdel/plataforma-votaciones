@@ -7,7 +7,7 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { drawCommitment, formatTimestamp, fromHex, hashJsonHex, roundTime, toHex, verifyBoard } from "@pv/core";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { closeDueAssents } from "../src/assents.ts";
 import { DirectoryPublisher } from "../src/publisher.ts";
 import { closeDue } from "../src/votings.ts";
@@ -316,6 +316,33 @@ describe("assent", () => {
     const record = (await t.call("GET", "/assents", undefined, p4)).body.assents[0].record;
     expect(record).toMatchObject({ objections: 1, outcome: "next_plenary", members: 10, type: "assent" });
     expect(JSON.stringify(record)).not.toContain("Persona");
+    expect(JSON.parse(t.publisher.files.get("chain.json")!).records).toHaveLength(1);
+  });
+
+  it("withdraws a proposal whose notices could not all be sent", async () => {
+    const t = await session();
+    const send = t.deps.mailer.send.bind(t.deps.mailer);
+    let n = 0;
+    const spy = vi.spyOn(t.deps.mailer, "send").mockImplementation(async (m) => {
+      if (++n === 3) throw new Error("provider refused");
+      return send(m);
+    });
+    const res = await t.call("POST", "/assents", { title: "Calendar", text: "Approve the calendar.", not_excluded: true, closes_at: formatTimestamp(t.clock.t + 5 * 86400_000) }, t.official);
+    spy.mockRestore();
+    expect(res).toEqual({ status: 502, body: { error: "notices_failed" } });
+    expect((await t.call("GET", "/assents", undefined, t.official)).body.assents).toEqual([]);
+  });
+
+  it("publishes again a closed record whose publication failed", async () => {
+    const t = await session();
+    const a = (await t.call("POST", "/assents", { title: "Calendar", text: "Approve the calendar.", not_excluded: true, closes_at: formatTimestamp(t.clock.t + 5 * 86400_000) }, t.official)).body;
+    t.clock.t += 5 * 86400_000;
+    const spy = vi.spyOn(t.publisher, "publish").mockRejectedValueOnce(new Error("GitHub down"));
+    await expect(closeDueAssents(t.deps)).rejects.toThrow("GitHub down");
+    spy.mockRestore();
+    expect([...t.publisher.files.keys()].some((p) => p.endsWith(`${a.id}.assent.json`))).toBe(false);
+    await closeDueAssents(t.deps);
+    expect([...t.publisher.files.keys()].some((p) => p.endsWith(`${a.id}.assent.json`))).toBe(true);
     expect(JSON.parse(t.publisher.files.get("chain.json")!).records).toHaveLength(1);
   });
 });

@@ -31,7 +31,11 @@ function standing(deps: Deps, id: string) {
 
 const path = (a: Assent) => `${datePath(a.closesAt)}/${a.id}.assent.json`;
 
-/** Closes every assent whose deadline has passed: builds, chains and publishes its record. */
+/**
+ * Closes every assent whose deadline has passed: builds, chains and publishes its record. A record
+ * chained but not yet published (its publication failed) is published again on the next run, since
+ * the chain would otherwise name a file that is not there.
+ */
 export async function closeDueAssents(deps: Deps): Promise<void> {
   const due = deps.db.select().from(assent).where(eq(assent.status, "open")).all().filter((a) => a.closesAt <= deps.now());
   for (const a of due) {
@@ -51,16 +55,22 @@ export async function closeDueAssents(deps: Deps): Promise<void> {
       voting_id: a.id,
     };
     deps.db.transaction((tx) => {
-      appendToChain(tx, record, path(a));
-      tx.update(assent).set({ status: "closed", record }).where(eq(assent.id, a.id)).run();
+      const done = tx.update(assent).set({ status: "closed", record }).where(and(eq(assent.id, a.id), eq(assent.status, "open"))).run();
+      if (done.changes === 1) appendToChain(tx, record, path(a));
     });
+  }
+  const unpublished = deps.db.select().from(assent).where(and(eq(assent.status, "closed"), isNull(assent.publishedAt))).all();
+  for (const a of unpublished) {
+    const record = a.record as { outcome: string; objections: number };
     await deps.publisher.publish([jsonFile(path(a), record), chainFile(deps)], `Close assent ${a.id}`);
     deps.db.update(assent).set({ publishedAt: deps.now() }).where(eq(assent.id, a.id)).run();
     const hash = recordOf(deps, record);
-    const es = record.outcome === "approved" ? "Aprobada" : `Va al siguiente pleno (${objections} oposiciones)`;
-    const en = record.outcome === "approved" ? "Approved" : `Goes to the next plenary (${objections} objections)`;
+    const es = record.outcome === "approved" ? "Aprobada" : `Va al siguiente pleno (${record.objections} oposiciones)`;
+    const en = record.outcome === "approved" ? "Approved" : `Goes to the next plenary (${record.objections} objections)`;
     for (const m of electorate(deps, a.electorateFilter)) {
-      await deps.mailer.send({ to: m.email, subject: `Asentimiento cerrado · Assent closed: ${a.title}`, text: `${es}. Hash del registro: ${hash}\n${en}. Record hash: ${hash}\n\n${deps.webOrigin}` });
+      await deps.mailer
+        .send({ to: m.email, subject: `Asentimiento cerrado · Assent closed: ${a.title}`, text: `${es}. Hash del registro: ${hash}\n${en}. Record hash: ${hash}\n\n${deps.webOrigin}` })
+        .catch(() => undefined);
     }
   }
 }
@@ -124,12 +134,21 @@ export function assentRoutes(deps: Deps): Hono<AuthEnv> {
       sentAt, closesAt: parseTimestamp(b.closes_at) * 1000, status: "open", record: null, publishedAt: null,
     };
     deps.db.insert(assent).values(row).run();
+    let failed = 0;
     for (const m of people) {
-      await deps.mailer.send({
-        to: m.email,
-        subject: `Propuesta por asentimiento · Proposal by assent: ${row.title}`,
-        text: `${row.text}\n\nSe aprobará si nadie se opone antes de ${b.closes_at} (UTC). Para oponerte, entra en ${deps.webOrigin}\nIt will be approved unless someone objects before ${b.closes_at} (UTC). To object, go to ${deps.webOrigin}`,
-      });
+      await deps.mailer
+        .send({
+          to: m.email,
+          subject: `Propuesta por asentimiento · Proposal by assent: ${row.title}`,
+          text: `${row.text}\n\nSe aprobará si nadie se opone antes de ${b.closes_at} (UTC). Para oponerte, entra en ${deps.webOrigin}\nIt will be approved unless someone objects before ${b.closes_at} (UTC). To object, go to ${deps.webOrigin}`,
+        })
+        .catch(() => failed++);
+    }
+    // Silence counts as consent only if everyone was told: without that, the proposal is withdrawn
+    // and the officials can send it again.
+    if (failed > 0) {
+      deps.db.delete(assent).where(eq(assent.id, row.id)).run();
+      throw new HttpError(502, "notices_failed");
     }
     return c.json({ ...row, min_closes_at: minimum }, 201);
   });
