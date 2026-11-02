@@ -33,8 +33,8 @@ export async function finalize(b: Awaited<ReturnType<typeof blind>>, blindSig: s
 }
 
 /** Builds and sends a vote; returns the HTTP status, the body and the receipt. */
-export async function cast(reception: Hono, votingId: string, cred: Credential, answers: Record<string, string>, headers: Record<string, string> = {}) {
-  const vote = { answers, s: hex(crypto.getRandomValues(new Uint8Array(32))), sig: cred.sig, token: cred.token, voting_id: votingId };
+export async function cast(reception: Hono, votingId: string, cred: Credential, answers: Record<string, string>, headers: Record<string, string> = {}, s = hex(crypto.getRandomValues(new Uint8Array(32)))) {
+  const vote = { answers, s, sig: cred.sig, token: cred.token, voting_id: votingId };
   const res = await reception.request("/cast", { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(vote) });
   const body = await res.json();
   return { status: res.status, body, vote, receipt: { ...vote, ack: voteAck(vote), type: "receipt", version: 1 }, headers: res.headers };

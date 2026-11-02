@@ -134,6 +134,21 @@ describe("secret voting, live", () => {
     expect(await bad.json()).toEqual({ error: "invalid_vote" });
   });
 
+  it("refuses a second ballot with the same s, so the board stays verifiable", async () => {
+    const t = await session();
+    const v = await t.createAndOpen();
+    const opening = JSON.parse(t.publisher.files.get([...t.publisher.files.keys()].find((p) => p.endsWith(".opening.json"))!)!);
+    const s = "ab".repeat(32);
+    const first = await cast(t.reception, v.id, await t.credential(v.id, t.tokens.p1, 0), { q: "for" }, {}, s);
+    expect(first.status).toBe(200);
+    const second = await cast(t.reception, v.id, await t.credential(v.id, t.tokens.p1, 1), { q: "against" }, {}, s);
+    expect(second.status).toBe(409);
+    expect(second.body).toEqual({ error: "secret_reused" });
+    const board = (await t.call("POST", `/votings/${v.id}/close`, undefined, t.official)).body.board;
+    const chain = JSON.parse(t.publisher.files.get("chain.json")!);
+    expect(await verifyBoard({ opening, board, chain })).toEqual({ valid: true, result: board.result });
+  });
+
   it("requires a reason to open without quorum, and publishes it", async () => {
     const t = await session();
     const body = { ...YES_NO, min_attendance: [1, 2] };

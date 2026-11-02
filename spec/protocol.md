@@ -101,7 +101,8 @@ A member with proxies gets one separate ballot per right ("Your vote", "Proxy vo
 6. If `token` is already spent:
    - with an identical vote object: return the same `ack` (idempotent);
    - otherwise reject (`409`).
-7. Store the vote under `token` and mark the token as spent, **without time or order**. Return `{"ack": hex(HJ(vote object))}`.
+7. If another ballot of this voting already has the same `s`, reject (`409`). `id_c` depends only on `s`, `voting_id` and the cell, so a repeated `s` would make the board fail §10.2 step 5.
+8. Store the vote under `token` and mark the token as spent, **without time or order**. Return `{"ack": hex(HJ(vote object))}`.
 
 The service MUST NOT accept a session header or set cookies, and the response MUST NOT depend on who sent it.
 

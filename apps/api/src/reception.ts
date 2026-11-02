@@ -4,7 +4,7 @@
  * ballot and the spent token are keyed by the token in WITHOUT ROWID tables.
  */
 import { fromHex, importVotingKey, validAnswers, verifySignature, voteAck, type Method, type Vote } from "@pv/core";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { HttpError, type Deps } from "./context.ts";
@@ -60,8 +60,12 @@ export function receptionApp(deps: Deps): Hono {
       return c.json({ ack });
     }
     if (deps.db.select().from(spentToken).where(eq(spentToken.token, vote.token)).get() !== undefined) throw new HttpError(409, "token_spent");
+    // 7. s unique within the voting: id_c depends only on s, so a repeat would break the board.
+    if (deps.db.select({ token: ballotReceived.token }).from(ballotReceived).where(and(eq(ballotReceived.votingId, v.id), eq(ballotReceived.s, vote.s))).get() !== undefined) {
+      throw new HttpError(409, "secret_reused");
+    }
 
-    // 7. Store without time or order.
+    // 8. Store without time or order. Nothing awaits between the checks above and this insert.
     deps.db.transaction((tx) => {
       tx.insert(ballotReceived).values({ token: vote.token, votingId: v.id, sig: vote.sig, s: vote.s, answers: vote.answers }).run();
       tx.insert(spentToken).values({ token: vote.token, votingId: v.id }).run();
