@@ -50,6 +50,8 @@ function mailer(): Mailer {
 function publisher(): Publisher {
   switch (env("PV_PUBLISH")) {
     case "github":
+      // Pages of the data repository on the client's origin could read every voter's browser storage.
+      if (new URL(env("PV_PAGES_URL")).origin === new URL(env("PV_WEB_ORIGIN")).origin) throw new Error("PV_PAGES_URL must be on another origin than PV_WEB_ORIGIN");
       return new GitHubPublisher({ repository: env("PV_GITHUB_REPOSITORY"), branch: env("PV_GITHUB_BRANCH"), token: env("PV_GITHUB_TOKEN"), pagesUrl: env("PV_PAGES_URL") });
     case "directory":
       return new DirectoryPublisher(env("PV_PUBLISH_DIR"));

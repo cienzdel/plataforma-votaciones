@@ -83,6 +83,10 @@ function App() {
 
 document.documentElement.lang = getLang();
 loadConfig().then(
-  () => render(<App />, document.getElementById("app")!),
+  (c) =>
+    // Published data served from this same origin could read this browser's credentials and receipts.
+    c.data !== null && new URL(c.data, location.href).origin === location.origin
+      ? render(<Status kind="error">{t("error_generic")}</Status>, document.getElementById("app")!)
+      : render(<App />, document.getElementById("app")!),
   () => render(<Status kind="error">{t("error_generic")}</Status>, document.getElementById("app")!),
 );
