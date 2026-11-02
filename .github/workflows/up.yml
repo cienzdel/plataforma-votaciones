@@ -12,7 +12,6 @@ permissions:
   contents: read
 env:
   HCLOUD_VERSION: "1.57.0" # [to be verified] pin the current hcloud CLI release
-  OCI_CLI_VERSION: "3.66.0" # [to be verified] pin the current OCI CLI release
   PROVIDER: ${{ vars.PV_PROVIDER || 'oracle' }}
 jobs:
   up:
@@ -24,14 +23,14 @@ jobs:
       reception: ${{ steps.hosts.outputs.reception }}
     steps:
       - uses: actions/checkout@v5
-      - name: Deploy key
-        env:
-          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      - name: Install the OCI CLI
+        if: env.PROVIDER == 'oracle'
+        # No secret is in this job's files or environment yet, and every package is hash-checked.
         run: |
-          install -m 600 /dev/null key
-          printf '%s\n' "$KEY" > key
-          ssh-keygen -y -f key > key.pub
-      - name: Install and configure the OCI CLI
+          python3 -m venv "$HOME/oci"
+          "$HOME/oci/bin/pip" install --require-hashes --no-deps -r infra/oci-requirements.txt
+          echo "$HOME/oci/bin" >> "$GITHUB_PATH"
+      - name: Configure the OCI CLI
         if: env.PROVIDER == 'oracle'
         env:
           OCI_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
@@ -40,7 +39,6 @@ jobs:
           OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
           OCI_REGION: ${{ vars.OCI_REGION }}
         run: |
-          pipx install "oci-cli==${OCI_CLI_VERSION}"
           mkdir -p ~/.oci
           install -m 600 /dev/null ~/.oci/key.pem
           printf '%s\n' "$OCI_KEY" > ~/.oci/key.pem
@@ -50,6 +48,13 @@ jobs:
       - name: Install hcloud
         if: env.PROVIDER == 'hetzner'
         run: curl -fsSL "https://github.com/hetznercloud/cli/releases/download/v${HCLOUD_VERSION}/hcloud-linux-amd64.tar.gz" | sudo tar -xz -C /usr/local/bin hcloud
+      - name: Deploy key
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          install -m 600 /dev/null key
+          printf '%s\n' "$KEY" > key
+          ssh-keygen -y -f key > key.pub
       - name: Start the VM
         id: vm
         env:
