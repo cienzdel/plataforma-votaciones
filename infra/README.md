@@ -60,7 +60,7 @@ Todas las cuentas se registran con el correo institucional del órgano (ADR-0022
 ## Uso · Usage
 
 - **Encender · Start:** run the **Up** workflow and approve it. It creates the VM (from the last snapshot, so the data are back), deploys the commit, waits for HTTPS and publishes the web client with the new API addresses.
-- **Apagar · Stop:** run **Down** when nothing is open (assents included). It stores an encrypted backup in the backup repository, snapshots the VM (keeping the two newest snapshots) and deletes it; the web client then says the platform is off.
+- **Apagar · Stop:** run **Down** when nothing is open (assents included). It stores an encrypted backup in the backup repository, stops the stack and destroys the secrets file (`infra/.env`, with the master key) on the VM, snapshots the VM (keeping the two newest snapshots) and deletes it; the web client then says the platform is off.
 
 ## Restaurar una copia · Restoring a backup
 

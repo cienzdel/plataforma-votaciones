@@ -1,6 +1,6 @@
 # Stops the voting machine when nothing is open (ADR-0017, ADR-0022): encrypted backup to the
-# private backup repository, then the VM is stopped (Oracle) or snapshotted and deleted (Hetzner),
-# and the web client is switched to "off".
+# private backup repository, the secrets file is destroyed on the VM, then the VM is stopped
+# (Oracle) or snapshotted and deleted (Hetzner), and the web client is switched to "off".
 name: Down
 on:
   workflow_dispatch:
@@ -59,7 +59,10 @@ jobs:
           printf '%s\n' "$RECIPIENTS" | $ssh "cat > /tmp/recipients"
           $ssh "cd /opt/pv/src && $sudo sh infra/scripts/backup.sh /tmp/recipients /tmp/$name && $sudo chown $user /tmp/$name"
           scp -i key "$user@$ip:/tmp/$name" "$name"
-          $ssh "rm -f /tmp/$name /tmp/recipients && cd /opt/pv/src && $sudo docker compose -f infra/compose.yaml down"
+          # The stack stops and its containers, whose configuration holds the environment, are
+          # removed; then the secrets file goes too, so the stopped disk or the snapshot does not
+          # keep the master key next to the database. The next Up writes a fresh one.
+          $ssh "rm -f /tmp/$name /tmp/recipients && cd /opt/pv/src && $sudo docker compose -f infra/compose.yaml down && $sudo shred -u infra/.env"
           echo "BACKUP=$name" >> "$GITHUB_ENV"
       - name: Store the backup in the private backup repository
         env:
