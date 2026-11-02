@@ -374,7 +374,8 @@ describe("independent verification", () => {
       const receipt = join(dir, "receipt.json");
       (await import("node:fs")).writeFileSync(receipt, JSON.stringify(r.receipt));
       const out = execFileSync(python, ["-m", "pv_verify", dir, "--receipt", receipt], { cwd: join(import.meta.dirname, "../../../tools/verify"), encoding: "utf8" });
-      expect(out).toContain("receipt_checked");
+      expect(out).toContain("receipt 1: ok");
+      expect(out).not.toContain("profile_not_checked"); // published with the opening notice
       expect(out).toContain("RESULT: all checks passed");
     } finally {
       rmSync(dir, { recursive: true, force: true });

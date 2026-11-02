@@ -205,7 +205,9 @@ async function open(deps: Deps, v: Voting, forceReason: string | null, waitForPa
     if (key !== null) tx.insert(signingKey).values({ votingId: v.id, publicKey: key.publicKey, privateKey: key.privateKey, destroyedAt: null }).run();
     for (const r of snap.rights) tx.insert(electorateSnapshot).values({ votingId: v.id, memberId: r.memberId, rights: r.own + r.proxies }).run();
   });
-  await deps.publisher.publish([jsonFile(basePath(updated) + ".opening.json", opening)], `Open voting ${v.id}`);
+  // The profile goes with it, so that anyone can check the rules against it (spec/formats.md §9.1).
+  const profile = jsonFile(`profiles/${rules.profile.hash}.json`, deps.profile);
+  await deps.publisher.publish([jsonFile(basePath(updated) + ".opening.json", opening), profile], `Open voting ${v.id}`);
   return updated;
 }
 

@@ -152,7 +152,7 @@ After the board is published, the client fetches the chain, the board and its op
 Given the data repository, the verifier MUST check, for every board:
 
 1. **Format:** the board conforms to [`formats.md`](formats.md), and `rules_hash = HJ(rules)`.
-2. **Opening notice:** the board's `rules`, `rules_hash`, `key`, `quorum`, draw commitment and (for `final_link`) draw round and closing time equal those of the opening notice.
+2. **Opening notice:** the board's `candidates_hash`, `rules`, `rules_hash`, `key`, `quorum`, draw commitment and (for `final_link`) draw round and closing time equal those of the opening notice.
 3. **Key** (`secret`): `fingerprint = H(DER)`, modulus of 3072 bits, exponent 65537.
 4. **Participation** (`secret`): every `sig` is a valid RSASSA-PSS signature over its `token`; every `token[32:48] = voting_id`; no token appears twice; the list is sorted.
 5. **Cells** (`secret`): every cell of the method is present; every list has exactly `len(participation)` entries, is sorted by `id_c` and has no repeated `id_c`; every value is allowed.
@@ -162,8 +162,16 @@ Given the data repository, the verifier MUST check, for every board:
 9. **Draw:** commitment, drand signature, round rule, `σ` and `order` ([`draws.md`](draws.md)).
 10. **Result:** recomputed with [`methods.md`](methods.md) from `tallies`, counters, `params` and the draw order, and equal to `result`.
 11. **Candidates:** if the candidates table is available, `candidates_hash` matches it and every id in the rules appears in it.
+    - **Roll call:** if the roll-call list is available, `roll_call_hash` matches it, its `voting_id` is the board's, it has `received` votes with one per member and right, each a complete ballot of allowed values, and the counts of its answers equal `tallies`.
 12. **Chain:** every `record_hash` and every `prev` link ([`formats.md`](formats.md) §9).
 
-It MUST also check every stand-alone draw and assent record in the chain, and SHOULD check a receipt given by the user (§10.1).
+Across the repository it MUST also check that:
+
+- every `path` in the chain file is relative, in plain segments, and stays inside the repository;
+- no `voting_id` has two boards;
+- the rules of each board are those of its profile (`profiles/<hash>.json`, or one given by the user): same `id` and version, a `quorum` the profile defines, and an `electorate_filter` that is one of its degrees; if no profile is available, it says so;
+- every stand-alone tie draw follows a board of its voting whose `result.outcome` is `draw_required`, with `items` equal to `result.tied` and `spots` equal to `result.spots`, and there is at most one per voting.
+
+It MUST also check every stand-alone draw and assent record in the chain. It SHOULD check the receipts given by the user (§10.1), and then MUST give each one its own verdict: a receipt whose voting has no valid board fails.
 
 What the verifier cannot check is listed in the threat model: that the key was destroyed, that the server did not correlate requests in real time, and that the manual tallies are true.

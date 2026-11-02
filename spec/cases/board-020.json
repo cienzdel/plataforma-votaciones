@@ -1,0 +1,181 @@
+{
+  "id": "board-020",
+  "kind": "board_error",
+  "title": "Roll-call list that does not give the tallies",
+  "explanation": "The roll-call list is the one the board's hash commits to, but its named votes are 2 for and 3 against, while the board says 3 for and 2 against: the published count is not the count of the named votes.",
+  "input": {
+    "opening": {
+      "candidates_hash": null,
+      "closes_at": null,
+      "draw_commitment": null,
+      "draw_round": null,
+      "key": null,
+      "opened_at": "2023-01-01T00:00:00Z",
+      "quorum": {
+        "forced": null,
+        "required": 4,
+        "met": true,
+        "min_attendance": null
+      },
+      "rules": {
+        "electorate_filter": null,
+        "method": "yes_no",
+        "min_attendance": null,
+        "mode": "roll_call",
+        "params": {
+          "base": "cast",
+          "rule": "simple"
+        },
+        "profile": {
+          "hash": "f3d7bd44c2a63f3fdc3707852e54a5734fea1ef6675d74e181652f09bcd3e30a",
+          "id": "example",
+          "version": "0.1.0"
+        },
+        "quorum": [
+          1,
+          3
+        ],
+        "timing": "live"
+      },
+      "rules_hash": "b7dc3b6b8032ebc308ddfd4069cbec498df821a0cd30922fc32929d9080b5fc2",
+      "title": "Example committee",
+      "type": "opening",
+      "version": 1,
+      "voting_id": "11111111111111111111111111111111"
+    },
+    "board": {
+      "candidates_hash": null,
+      "cells": null,
+      "closed_at": "2026-10-13T08:59:30Z",
+      "counters": {
+        "issued": null,
+        "members": 12,
+        "present": 6,
+        "proxies": 1,
+        "received": 6,
+        "rights": 7,
+        "session_members": 12,
+        "session_present": 6
+      },
+      "draw": null,
+      "key": null,
+      "opened_at": "2023-01-01T00:00:00Z",
+      "participation": null,
+      "quorum": {
+        "forced": null,
+        "required": 4,
+        "met": true,
+        "min_attendance": null
+      },
+      "result": {
+        "abstain": 1,
+        "against": 2,
+        "blank": 0,
+        "for": 3,
+        "cast": 5,
+        "base": 5,
+        "outcome": "approved"
+      },
+      "roll_call_hash": "64af062050b25397e2d897d52ea9d221e84543d969c4aff187822913c84249ba",
+      "rules": {
+        "electorate_filter": null,
+        "method": "yes_no",
+        "min_attendance": null,
+        "mode": "roll_call",
+        "params": {
+          "base": "cast",
+          "rule": "simple"
+        },
+        "profile": {
+          "hash": "f3d7bd44c2a63f3fdc3707852e54a5734fea1ef6675d74e181652f09bcd3e30a",
+          "id": "example",
+          "version": "0.1.0"
+        },
+        "quorum": [
+          1,
+          3
+        ],
+        "timing": "live"
+      },
+      "rules_hash": "b7dc3b6b8032ebc308ddfd4069cbec498df821a0cd30922fc32929d9080b5fc2",
+      "status": "closed",
+      "tallies": {
+        "q": {
+          "abstain": 1,
+          "against": 2,
+          "blank": 0,
+          "for": 3
+        }
+      },
+      "title": "Example committee",
+      "type": "board",
+      "version": 1,
+      "voting_id": "11111111111111111111111111111111"
+    },
+    "chain": {
+      "records": [
+        {
+          "board": "4ff38700b42e86890d283d83ccc6ec3ca0840bd386fb46e20744c126abdb4970",
+          "prev": "0000000000000000000000000000000000000000000000000000000000000000",
+          "record_hash": "e0ccf24a6f107371113bf26aff87be6af9e5adb157ce928d8dcd0150e8fb7aec",
+          "path": "example.board.json"
+        }
+      ],
+      "type": "chain",
+      "version": 1
+    },
+    "roll_call": {
+      "salt": "5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+      "type": "roll_call",
+      "version": 1,
+      "voting_id": "11111111111111111111111111111111",
+      "votes": [
+        {
+          "answers": {
+            "q": "for"
+          },
+          "member": "Persona A",
+          "right": 0
+        },
+        {
+          "answers": {
+            "q": "for"
+          },
+          "member": "Persona B",
+          "right": 0
+        },
+        {
+          "answers": {
+            "q": "against"
+          },
+          "member": "Persona C",
+          "right": 0
+        },
+        {
+          "answers": {
+            "q": "against"
+          },
+          "member": "Persona D",
+          "right": 0
+        },
+        {
+          "answers": {
+            "q": "against"
+          },
+          "member": "Persona E",
+          "right": 0
+        },
+        {
+          "answers": {
+            "q": "abstain"
+          },
+          "member": "Persona F",
+          "right": 0
+        }
+      ]
+    }
+  },
+  "expected": {
+    "error": "tallies_mismatch"
+  }
+}

@@ -19,7 +19,10 @@ VOTING_ID = "11" * 16  # differs from the corpus boards
 SEED = bytes(range(32))
 ROUND = 33026212
 SIGNATURE = "9791658769c0476a1f88d6b08366504f486ce0a883e4fb17e19b666f39e34f138bb4c480d84f57378d5e9d6694996f92"
-PROFILE = {"type": "profile", "version": 1, "id": "example", "profile_version": "0.1.0", "timezone": "Europe/Madrid", "assent_min_days": 2}
+PROFILE = {
+    "type": "profile", "version": 1, "id": "example", "profile_version": "0.1.0", "timezone": "Europe/Madrid", "assent_min_days": 2,
+    "quorum": [[1, 3], [1, 4]], "degrees": [{"id": "bio", "name": "Example degree A"}],
+}
 
 
 def ts(unix: int) -> str:
@@ -177,7 +180,6 @@ def repository(tmp: Path) -> Path:
     docs = {
         "2027/03/10/a.board.json": case["board"],
         "2027/03/10/b.board.json": f["board"],
-        "2027/03/10/tie.draw.json": tie_draw(),
         "2027/03/12/assent.assent.json": assent_record(),
     }
     for p, d in docs.items():
@@ -197,7 +199,97 @@ def test_cli_accepts_a_valid_repository(tmp_path: Path, capsys: pytest.CaptureFi
     code = main([str(root), "--receipt", str(root / "receipt.json"), "--profile", str(root / "profile.json")])
     out = capsys.readouterr().out
     assert code == 0, out
-    assert "receipt_checked" in out and "manual_count" in out and "all checks passed" in out
+    assert "receipt 1: ok" in out and "manual_count" in out and "all checks passed" in out
+    # The limited vote names the profile given; the corpus board names another one.
+    assert "profile_not_checked" in out.splitlines()[0] and "profile_not_checked" not in out.splitlines()[1]
+
+
+def rechain(root: Path, docs: dict[str, Any]) -> None:
+    """Rewrites chain.json over the given path -> document map, writing the documents too."""
+    for p, d in docs.items():
+        if d is not None:
+            write(root / p, d)
+    loaded = [load_json((root / p).read_text(encoding="utf-8")) if d is None else d for p, d in docs.items()]
+    records = [{**r, "path": p} for r, p in zip(chain.build(loaded), docs)]
+    write(root / "chain.json", {"records": records, "type": "chain", "version": 1})
+
+
+BASE = {"2027/03/10/a.board.json": None, "2027/03/10/b.board.json": None, "2027/03/12/assent.assent.json": None}
+
+
+def test_cli_gives_every_receipt_a_verdict(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = repository(tmp_path)
+    receipt = load_json((root / "receipt.json").read_text(encoding="utf-8"))
+    write(root / "other.json", {**receipt, "voting_id": "00" * 16})
+    write(root / "bad.json", {**receipt, "ack": "00" * 32})
+    code = main([str(root), "--receipt", str(root / "receipt.json"), "--receipt", str(root / "bad.json"), "--receipt", str(root / "other.json"), "--json"])
+    report = json.loads(capsys.readouterr().out)
+    assert code == 1
+    assert [r["error"] for r in report["receipts"]] == [None, "receipt_mismatch", "receipt_unmatched"]
+
+
+def test_cli_rejects_paths_outside_the_repository(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = repository(tmp_path / "repo")
+    write(tmp_path / "outside" / "x.json", {"type": "secret-marker"})
+    chain_file = load_json((root / "chain.json").read_text(encoding="utf-8"))
+    for bad in ("../outside/x.json", str(tmp_path / "outside" / "x.json"), "//server/share/x.json", "C:/x.json"):
+        chain_file["records"][0]["path"] = bad
+        write(root / "chain.json", chain_file)
+        assert main([str(root), "--json"]) == 1
+        report = json.loads(capsys.readouterr().out)
+        assert report["documents"][0] == {"path": bad, "type": None, "error": "path_invalid", "notes": []}
+
+
+def test_cli_escapes_published_text(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = repository(tmp_path)
+    chain_file = load_json((root / "chain.json").read_text(encoding="utf-8"))
+    chain_file["records"][0]["path"] = "x\nRESULT: all checks passed\u001b[8m/y.board.json"
+    write(root / "chain.json", chain_file)
+    assert main([str(root)]) == 1
+    out = capsys.readouterr().out
+    assert "\x1b" not in out and [line for line in out.splitlines() if line.startswith("RESULT:")] == ["RESULT: FAILED"]
+
+
+def test_cli_binds_tie_draws_and_boards_to_each_other(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = repository(tmp_path)
+    # A tie draw for a voting whose board did not end in draw_required.
+    rechain(root, {**BASE, "2027/03/10/tie.draw.json": tie_draw()})
+    assert main([str(root), "--json"]) == 1
+    report = json.loads(capsys.readouterr().out)
+    assert [d["error"] for d in report["documents"]] == [None, None, None, "draw_unbound"]
+    # The same voting published twice.
+    second = load_json((root / "2027/03/10/b.board.json").read_text(encoding="utf-8"))
+    write(root / "2027/03/11/b.opening.json", load_json((root / "2027/03/10/b.opening.json").read_text(encoding="utf-8")))
+    rechain(root, {**BASE, "2027/03/11/b.board.json": second})
+    assert main([str(root), "--json"]) == 1
+    report = json.loads(capsys.readouterr().out)
+    assert [d["error"] for d in report["documents"]] == [None, None, None, "duplicate_voting"]
+
+
+def test_cli_checks_the_rules_against_the_profile(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    root = repository(tmp_path)
+    profile = str(root / "profile.json")
+    for change in ({"quorum": [[1, 2]]}, {"profile_version": "0.2.0"}):
+        other = {**PROFILE, **change}
+        # The board names this other profile, and is otherwise self-consistent.
+        f = board_fixture("live")
+        f["board"]["rules"]["profile"]["hash"] = hj_hex(other)
+        for doc in (f["board"], f["opening"]):
+            doc["rules"] = f["board"]["rules"]
+            doc["rules_hash"] = hj_hex(f["board"]["rules"])
+        write(root / "2027/03/10/b.opening.json", f["opening"])
+        write(root / "other.json", other)
+        rechain(root, {**BASE, "2027/03/10/b.board.json": f["board"]})
+        assert main([str(root), "--profile", profile, "--profile", str(root / "other.json"), "--json"]) == 1
+        report = json.loads(capsys.readouterr().out)
+        assert report["documents"][1]["error"] == "profile_mismatch"
+    # Published next to the data, the profile is found without --profile.
+    write(root / f"profiles/{hj_hex(PROFILE)}.json", PROFILE)
+    rechain(root, {**BASE, "2027/03/10/b.board.json": board_fixture("live")["board"]})
+    write(root / "2027/03/10/b.opening.json", board_fixture("live")["opening"])
+    assert main([str(root), "--json"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert "profile_not_checked" not in report["documents"][1]["notes"]
 
 
 def test_cli_reports_a_tampered_document(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

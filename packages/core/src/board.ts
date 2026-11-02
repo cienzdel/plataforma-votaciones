@@ -32,6 +32,7 @@ export type BoardErrorCode =
   | "order_mismatch"
   | "result_mismatch"
   | "candidates_mismatch"
+  | "roll_call_mismatch"
   | "chain_mismatch"
   | "prev_mismatch"
   | "receipt_mismatch";
@@ -92,6 +93,8 @@ export interface BoardInput {
   chain: { records: ChainRecord[] };
   /** The candidates table, if available (spec/formats.md §6). */
   candidates?: unknown;
+  /** The roll-call list, if available (spec/formats.md §7). */
+  rollCall?: unknown;
   /** A voter's receipt, for the individual check (spec/protocol.md §10.1). */
   receipt?: unknown;
 }
@@ -268,6 +271,26 @@ function checkCandidates(b: Board, table: unknown, candidates: string[]): void {
   fail(ok, "candidates_mismatch");
 }
 
+/** Step 11b: the roll-call list is the board's, and its votes give the tallies. */
+function checkRollCall(b: Board, list: unknown, spec: CellSpec): void {
+  const l = list as { type?: unknown; voting_id?: unknown; votes?: unknown };
+  fail(b.rules.mode === "roll_call" && hashJsonHex(list) === b.roll_call_hash && isObject(list) && l.type === "roll_call" && l.voting_id === b.voting_id && Array.isArray(l.votes), "roll_call_mismatch");
+  const votes = l.votes as { member?: unknown; right?: unknown; answers?: Record<string, unknown> }[];
+  const wellFormed = votes.every(
+    (v) =>
+      isObject(v) &&
+      typeof v.member === "string" &&
+      Number.isSafeInteger(v.right) &&
+      (v.right as number) >= 0 &&
+      isObject(v.answers) &&
+      jsonEqual(Object.keys(v.answers).sort(), [...spec.keys()].sort()) &&
+      [...spec].every(([cell, values]) => values.includes(v.answers![cell] as string)),
+  );
+  fail(wellFormed && votes.length === b.counters.received && new Set(votes.map((v) => JSON.stringify([v.member, v.right]))).size === votes.length, "roll_call_mismatch");
+  const derived = Object.fromEntries([...spec].map(([cell, values]) => [cell, Object.fromEntries(values.map((x) => [x, votes.filter((v) => v.answers![cell] === x).length]))]));
+  fail(jsonEqual(derived, b.tallies), "tallies_mismatch");
+}
+
 /** Step 12: the board is in the chain and the chain links are intact. */
 function checkChain(b: Board, records: ChainRecord[]): void {
   const boardHash = hashJsonHex(b);
@@ -342,6 +365,7 @@ export async function verifyBoard(input: BoardInput): Promise<BoardReport> {
       fail(jsonEqual(expected, b.result), "result_mismatch");
     }
     if (input.candidates !== undefined) checkCandidates(b, input.candidates, candidates);
+    if (input.rollCall !== undefined) checkRollCall(b, input.rollCall, spec);
     checkChain(b, input.chain.records);
   } catch (e) {
     if (e instanceof Failure) return { valid: false, error: e.code, universalValid: false };

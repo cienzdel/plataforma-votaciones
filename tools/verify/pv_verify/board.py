@@ -212,6 +212,23 @@ def verify_assent(a: Any, profile: dict[str, Any] | None = None) -> str | None:
 # --- board
 
 
+def check_roll_call(b: dict[str, Any], rc: Any, spec: dict[str, tuple[str, ...]]) -> None:
+    """Step 11b (spec/protocol.md §10.2): the roll-call list is the board's, and its votes give the tallies."""
+    ok = b["rules"]["mode"] == "roll_call" and hj_hex(rc) == b["roll_call_hash"] and type(rc) is dict
+    ok = ok and rc.get("type") == "roll_call" and rc.get("voting_id") == b["voting_id"] and type(rc.get("votes")) is list
+    check(ok, "roll_call_mismatch")
+    votes = rc["votes"]
+    ok = len(votes) == b["counters"]["received"] and all(
+        type(v) is dict and type(v.get("member")) is str and is_count(v.get("right")) and type(v.get("answers")) is dict
+        and set(v["answers"]) == set(spec) and all(v["answers"][k] in spec[k] for k in spec)
+        for v in votes
+    )
+    ok = ok and len({(v["member"], v["right"]) for v in votes}) == len(votes)
+    check(ok, "roll_call_mismatch")
+    derived = {cell: {x: sum(1 for v in votes if v["answers"][cell] == x) for x in values} for cell, values in spec.items()}
+    check(same(derived, b["tallies"]), "tallies_mismatch")
+
+
 def receipt_valid(b: dict[str, Any], r: Any) -> bool:
     """Individual verification of a receipt (spec/protocol.md §10.1)."""
     try:
@@ -233,6 +250,7 @@ def verify_board(
     candidates: Any = None,
     receipt: Any = None,
     check_beacon: bool = True,
+    roll_call: Any = None,
 ) -> dict[str, Any]:
     """
     Runs the checks of spec/protocol.md §10.2 in order and returns {"valid": True, "result"} or
@@ -330,6 +348,10 @@ def verify_board(
             posts = {x.get("id") for x in candidates.get("posts", [])}
             ok = ok and set(cand_ids) <= listed and set(r["params"].get("posts", [])) <= posts
             check(ok, "candidates_mismatch")
+
+        # 11b. Roll-call list: the tallies must be the count of the named votes
+        if roll_call is not None:
+            check_roll_call(b, roll_call, spec)
 
         # 12. Chain
         check(any(rec.get("board") == hj_hex(b) for rec in records), "chain_mismatch")

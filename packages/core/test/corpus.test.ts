@@ -69,7 +69,7 @@ async function run(kind: string, input: Input): Promise<unknown> {
       return { outcome: assentOutcome(input.objections_at_close) };
     case "board":
     case "board_error": {
-      const report = await verifyBoard(input);
+      const report = await verifyBoard({ ...input, rollCall: input.roll_call });
       if (report.valid) return { valid: true, result: report.result };
       return report.universalValid ? { error: report.error, universal_valid: true } : { error: report.error };
     }
@@ -80,7 +80,7 @@ async function run(kind: string, input: Input): Promise<unknown> {
 
 describe("spec/cases corpus", () => {
   it("has all the cases", () => {
-    expect(cases.length).toBe(96);
+    expect(cases.length).toBe(98);
   });
   it.each(cases.map((c) => [c.id, c]))("%s", async (_id, c) => {
     expect(await run(c.kind, c.input)).toEqual(c.expected);

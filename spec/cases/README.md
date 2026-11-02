@@ -53,7 +53,7 @@ When a case expects an error, `error` is the code of the **first** check that fa
 | 8. Quorum | `quorum_mismatch` |
 | 9. Draw | `commitment_mismatch`, `drand_invalid`, `round_mismatch`, `order_mismatch` |
 | 10. Result | `result_mismatch` |
-| 11. Candidates | `candidates_mismatch` |
+| 11. Candidates | `candidates_mismatch`; roll call: `roll_call_mismatch`, `tallies_mismatch` |
 | 12. Chain | `chain_mismatch`, `prev_mismatch` |
 | Receipt (§10.1) | `receipt_mismatch` |
 
@@ -61,9 +61,11 @@ Checks outside a single board, reported by the verifier of a whole data reposito
 
 | Document | Codes |
 |---|---|
-| Stand-alone draw ([`draws.md`](../draws.md) §6) | `format_invalid`, then the codes of step 9 |
+| Board | `duplicate_voting` (a second board for a `voting_id`), `profile_mismatch` (rules not those of the profile) |
+| Stand-alone draw ([`draws.md`](../draws.md) §6) | `format_invalid`, then the codes of step 9, then `draw_unbound` (no earlier board of its voting ending in `draw_required` over the same items and spots, or a second draw) |
 | Assent record ([`formats.md`](../formats.md) §8) | `format_invalid`, `result_mismatch` (outcome does not follow from `objections`), `profile_mismatch`, `deadline_too_early` (only when the profile is available) |
-| Any document | `document_unreadable`, `roll_call_mismatch` |
+| Any document | `path_invalid` (absolute, `..` or other unsafe `path`), `document_unreadable` |
+| Receipt given by the user | `receipt_unmatched` (no board of its voting), `board_invalid`, `receipt_mismatch` |
 
 ## Coverage
 

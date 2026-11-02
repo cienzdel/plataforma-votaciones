@@ -53,12 +53,12 @@ def run(kind: str, i: dict[str, Any]) -> Any:
     if kind == "assent_outcome":
         return {"outcome": assent.outcome(i["objections_at_close"])}
     if kind in ("board", "board_error"):
-        return verify_board(i["opening"], i["board"], i["chain"]["records"], i.get("candidates"), i.get("receipt"))
+        return verify_board(i["opening"], i["board"], i["chain"]["records"], i.get("candidates"), i.get("receipt"), roll_call=i.get("roll_call"))
     raise AssertionError(f"unknown kind {kind}")
 
 
 def test_corpus_size() -> None:
-    assert len(ALL) == 96
+    assert len(ALL) == 98
 
 
 @pytest.mark.parametrize("case", ALL, ids=[c["id"] for c in ALL])
