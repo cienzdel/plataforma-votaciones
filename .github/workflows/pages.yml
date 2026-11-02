@@ -1,11 +1,10 @@
 # Builds the web client from this repository and publishes it on GitHub Pages with a build
 # provenance attestation (ADR-0017). config.json gives the API addresses; empty when it is off.
+# The addresses come only from Up, which runs in the approved "production" environment: a manual
+# run publishes the "off" client, and config.ts accepts only the addresses Up derives from the IP.
 name: Pages
 on:
   workflow_dispatch:
-    inputs:
-      api: { description: "Session API URL (empty: platform off)", default: "", type: string }
-      reception: { description: "Reception URL", default: "", type: string }
   workflow_call:
     inputs:
       api: { type: string, default: "" }
@@ -21,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0, pinned: it runs where the client is built and attested
       - uses: actions/setup-node@v5
         with: { node-version: 24, cache: pnpm }
       - run: pnpm install --frozen-lockfile --filter "@pv/web..."
