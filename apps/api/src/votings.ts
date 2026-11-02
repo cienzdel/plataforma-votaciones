@@ -437,7 +437,14 @@ async function notify(deps: Deps, v: Voting, recordHash: string): Promise<number
   const issued = new Map(
     deps.db.select({ memberId: issuance.memberId, n: count() }).from(issuance).where(eq(issuance.votingId, v.id)).groupBy(issuance.memberId).all().map((x) => [x.memberId, x.n]),
   );
-  const electorate = deps.db.select().from(member).where(eq(member.active, true)).all().filter((m) => r.electorate_filter === null || m.degrees.includes(r.electorate_filter));
+  // The electorate as it is now, plus whoever was in the snapshot or obtained credentials: a proxy
+  // holder from another degree, or a member who left the census since, must still get their count.
+  const holders = new Set([...deps.db.select({ id: electorateSnapshot.memberId }).from(electorateSnapshot).where(eq(electorateSnapshot.votingId, v.id)).all().map((x) => x.id), ...issued.keys()]);
+  const electorate = deps.db
+    .select()
+    .from(member)
+    .all()
+    .filter((m) => holders.has(m.id) || (m.active && (r.electorate_filter === null || m.degrees.includes(r.electorate_filter))));
   let failed = 0;
   for (const m of electorate) {
     const n = issued.get(m.id) ?? 0;

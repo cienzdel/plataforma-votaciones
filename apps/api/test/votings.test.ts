@@ -198,6 +198,18 @@ describe("secret voting, live", () => {
     expect(results.length).toBe(t.members.length - 1); // the whole census but the one that failed
   });
 
+  it("tells every credential holder their count, even if the census changed after the snapshot", async () => {
+    const t = await session();
+    const v = await t.createAndOpen();
+    await t.credential(v.id, t.tokens.p2);
+    // p2 leaves the census while the voting is open.
+    const csv = ["name,email,degrees", "Persona Mesa,mesa@example.org,bio", ...t.members.filter((m) => m.email !== "p2@example.org" && m.email !== "mesa@example.org").map((m) => `${m.name},${m.email},${m.degrees.join(" ")}`)].join("\n");
+    expect((await t.call("POST", "/census/import", { csv, reason: "Resignation" }, t.official)).status).toBe(200);
+    await t.call("POST", `/votings/${v.id}/close`, undefined, t.official);
+    const notice = t.mailer.sent.find((m) => m.to === "p2@example.org" && m.subject.startsWith("Resultado"));
+    expect(notice?.text).toContain("Se emitieron 1 credenciales a tu nombre");
+  });
+
   it("requires a reason to open without quorum, and publishes it", async () => {
     const t = await session();
     const body = { ...YES_NO, min_attendance: [1, 2] };
