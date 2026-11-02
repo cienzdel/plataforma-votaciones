@@ -210,6 +210,18 @@ describe("secret voting, live", () => {
     expect(notice?.text).toContain("Se emitieron 1 credenciales a tu nombre");
   });
 
+  it("does not open a voting whose opening notice could not be published", async () => {
+    const t = await session();
+    const v = await t.call("POST", "/votings", { meeting_id: t.meetingId, title: "Approval of the minutes", ...YES_NO }, t.official);
+    const spy = vi.spyOn(t.publisher, "publish").mockRejectedValueOnce(new Error("down"));
+    expect((await t.call("POST", `/votings/${v.body.id}/open`, {}, t.official)).status).toBe(500);
+    spy.mockRestore();
+    expect((await t.call("GET", `/votings/${v.body.id}`, undefined, t.official)).body.status).toBe("created");
+    const opened = await t.call("POST", `/votings/${v.body.id}/open`, {}, t.official);
+    expect(opened.body.status).toBe("open");
+    expect([...t.publisher.files.keys()].some((p) => p.endsWith(`${v.body.id}.opening.json`))).toBe(true);
+  });
+
   it("requires a reason to open without quorum, and publishes it", async () => {
     const t = await session();
     const body = { ...YES_NO, min_attendance: [1, 2] };

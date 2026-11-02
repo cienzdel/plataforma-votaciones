@@ -124,8 +124,31 @@ function create(deps: Deps, b: Record<string, unknown>): Voting {
  * Freezes the electorate, checks quorum, creates the key (`secret`) and publishes the opening
  * notice. The effective rules are fixed here, with the quorum of the call in force.
  */
+/**
+ * Moves a voting from one of the `from` states, read before an await, to new values. Another
+ * request may have moved it meanwhile (an annulment during a reveal, say): then nothing is written
+ * and the caller gets 409, inside its transaction, so its chain record is not appended either.
+ */
+function transition(tx: Pick<Deps["db"], "update">, id: string, from: Voting["status"][], set: Partial<Voting>): void {
+  const done = tx.update(voting).set(set).where(and(eq(voting.id, id), inArray(voting.status, from))).run();
+  if (done.changes === 0) throw new HttpError(409, "state_changed");
+}
+
+/** Votings being opened by this process: two overlapping opens would publish two keys. */
+const beingOpened = new Set<string>();
+
 async function open(deps: Deps, v: Voting, forceReason: string | null, waitForPages: boolean): Promise<Voting> {
   if (v.status !== "created") throw new HttpError(409, "not_created");
+  if (beingOpened.has(v.id)) throw new HttpError(409, "state_changed");
+  beingOpened.add(v.id);
+  try {
+    return await openOnce(deps, v, forceReason, waitForPages);
+  } finally {
+    beingOpened.delete(v.id);
+  }
+}
+
+async function openOnce(deps: Deps, v: Voting, forceReason: string | null, waitForPages: boolean): Promise<Voting> {
   const m = deps.db.select().from(meeting).where(eq(meeting.id, v.meetingId)).get()!;
   if (m.status !== "open") throw new HttpError(409, "meeting_not_open");
   if (deps.db.select().from(voting).where(and(eq(voting.meetingId, m.id), inArray(voting.status, ["awaiting_pages", "open"]))).get()) {
@@ -168,14 +191,19 @@ async function open(deps: Deps, v: Voting, forceReason: string | null, waitForPa
   const status = secret && (v.closesAt !== null || waitForPages) ? "awaiting_pages" : "open";
   const updated: Voting = { ...v, status, rules, rulesHash: opening.rules_hash, openedAt, snapshotCounters: { ...snap.counters }, quorum, opening, drawRound };
 
+  // The notice is public before the voting opens: if publishing fails, nothing has changed and the
+  // officials can open again. The profile goes with it, so that anyone can check the rules against
+  // it (spec/formats.md §9.1).
+  const profile = jsonFile(`profiles/${rules.profile.hash}.json`, deps.profile);
+  await deps.publisher.publish([jsonFile(basePath(updated) + ".opening.json", opening), profile], `Open voting ${v.id}`);
   deps.db.transaction((tx) => {
-    tx.update(voting).set(updated).where(eq(voting.id, v.id)).run();
+    if (tx.select().from(voting).where(and(eq(voting.meetingId, m.id), inArray(voting.status, ["awaiting_pages", "open"]))).get()) {
+      throw new HttpError(409, "another_voting_open");
+    }
+    transition(tx, v.id, ["created"], updated);
     if (key !== null) tx.insert(signingKey).values({ votingId: v.id, publicKey: key.publicKey, privateKey: key.privateKey, destroyedAt: null }).run();
     for (const r of snap.rights) tx.insert(electorateSnapshot).values({ votingId: v.id, memberId: r.memberId, rights: r.own + r.proxies }).run();
   });
-  // The profile goes with it, so that anyone can check the rules against it (spec/formats.md §9.1).
-  const profile = jsonFile(`profiles/${rules.profile.hash}.json`, deps.profile);
-  await deps.publisher.publish([jsonFile(basePath(updated) + ".opening.json", opening), profile], `Open voting ${v.id}`);
   return updated;
 }
 
@@ -323,8 +351,10 @@ function buildBoard(deps: Deps, v: Voting, status: "closed" | "annulled", draw: 
 function finish(deps: Deps, v: Voting, status: "closed" | "annulled", draw: Record<string, unknown> | null): Voting {
   const { board, rollCall } = buildBoard(deps, v, status, draw);
   deps.db.transaction((tx) => {
+    transition(tx, v.id, [v.status], { status, closedAt: v.closedAt, annulReason: v.annulReason, board, rollCall });
+    // The key goes in the same step, so a voting never ends with its key alive.
+    tx.update(signingKey).set({ privateKey: null, destroyedAt: deps.now() }).where(eq(signingKey.votingId, v.id)).run();
     appendToChain(tx, board, basePath(v) + ".board.json");
-    tx.update(voting).set({ status, closedAt: v.closedAt, annulReason: v.annulReason, board, rollCall }).where(eq(voting.id, v.id)).run();
   });
   return getVoting(deps, v.id);
 }
@@ -337,11 +367,13 @@ function close(deps: Deps, v: Voting, status: "closed" | "annulled", reason: str
   if (!["open", "awaiting_pages", "awaiting_draw"].includes(v.status)) throw new HttpError(409, "not_open");
   const closedAt = v.closedAt ?? v.closesAt ?? seconds(deps.now()) * 1000;
   const closing: Voting = { ...v, closedAt, annulReason: reason };
-  deps.db.update(signingKey).set({ privateKey: null, destroyedAt: deps.now() }).where(eq(signingKey.votingId, v.id)).run();
   if (status === "closed" && v.drawCommitment !== null) {
     // live: the round is fixed now and shown on the projection screen before it exists.
     const drawRound = v.drawRound ?? roundAt(seconds(closedAt) + LIVE_DRAW_DELAY_S);
-    deps.db.update(voting).set({ status: "awaiting_draw", closedAt, drawRound }).where(eq(voting.id, v.id)).run();
+    deps.db.transaction((tx) => {
+      transition(tx, v.id, [v.status], { status: "awaiting_draw", closedAt, drawRound });
+      tx.update(signingKey).set({ privateKey: null, destroyedAt: deps.now() }).where(eq(signingKey.votingId, v.id)).run();
+    });
     return getVoting(deps, v.id);
   }
   return finish(deps, closing, status, null);
@@ -382,7 +414,8 @@ async function reveal(deps: Deps, v: Voting, seed: unknown): Promise<Voting> {
  */
 export async function publish(deps: Deps, v: Voting): Promise<void> {
   if (v.board === null || v.publishedAt !== null) throw new HttpError(409, "nothing_to_publish");
-  const files: File[] = [jsonFile(basePath(v) + ".board.json", v.board)];
+  // The opening notice again, so that it is public with the board even if its first publication was lost.
+  const files: File[] = [jsonFile(basePath(v) + ".board.json", v.board), jsonFile(basePath(v) + ".opening.json", v.opening)];
   if (v.candidates !== null) files.push(jsonFile(basePath(v) + ".candidates.json", v.candidates));
   if (v.rollCall !== null) files.push(jsonFile(basePath(v) + ".roll_call.json", v.rollCall));
   files.push(chainFile(deps));
@@ -553,7 +586,7 @@ export function votingRoutes(deps: Deps): Hono<AuthEnv> {
     const v = getVoting(deps, c.req.param("id"));
     if (v.status !== "awaiting_pages") throw new HttpError(409, "not_awaiting_pages");
     if (!(await deps.publisher.isServed(jsonFile(basePath(v) + ".opening.json", v.opening)))) throw new HttpError(503, "not_served_yet");
-    deps.db.update(voting).set({ status: "open" }).where(eq(voting.id, v.id)).run();
+    transition(deps.db, v.id, ["awaiting_pages"], { status: "open" });
     return c.json(view(deps, getVoting(deps, v.id), me(c)));
   });
 
@@ -587,7 +620,7 @@ export function votingRoutes(deps: Deps): Hono<AuthEnv> {
     // would let them discard an outcome they dislike, so only the reveal is left (spec/draws.md §5).
     if (v.status === "awaiting_draw" && roundTime(v.drawRound!) * 1000 <= deps.now()) throw new HttpError(409, "draw_round_reached");
     if (v.status === "created") {
-      deps.db.update(voting).set({ status: "annulled", annulReason: reason.trim() }).where(eq(voting.id, v.id)).run();
+      transition(deps.db, v.id, ["created"], { status: "annulled", annulReason: reason.trim() });
     } else {
       await publish(deps, close(deps, v, "annulled", reason.trim()));
     }

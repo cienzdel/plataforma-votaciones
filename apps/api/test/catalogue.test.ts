@@ -190,6 +190,24 @@ describe("tie-break draws", () => {
     expect((await t.call("POST", `/votings/${v.id}/reveal`, { seed: SEED }, t.official)).body).toEqual({ error: "not_awaiting_draw" });
   });
 
+  it("does not let a reveal undo an annulment made while it waited for drand", async () => {
+    const t = await session();
+    const v = await t.create(LIMITED);
+    t.clock.t = ROUND_MS - 30_000; // closes so that its round is the one the fake drand serves
+    await t.call("POST", `/votings/${v.id}/close`, undefined, t.official);
+    let release!: () => void;
+    const held = new Promise<void>((r) => (release = r));
+    const drand = t.deps.drand;
+    t.deps.drand = async (round) => (await held, drand(round));
+    const revealing = t.call("POST", `/votings/${v.id}/reveal`, { seed: SEED }, t.official);
+    const annulled = await t.call("POST", `/votings/${v.id}/annul`, { reason: "Wrong candidates" }, t.official);
+    expect(annulled.body.status).toBe("annulled");
+    release();
+    expect((await revealing).body).toEqual({ error: "state_changed" });
+    expect((await t.call("GET", `/votings/${v.id}`, undefined, t.official)).body.status).toBe("annulled");
+    expect(JSON.parse(t.publisher.files.get("chain.json")!).records).toHaveLength(1);
+  });
+
   it("cannot be annulled once the round exists, when the seed holder could know the order", async () => {
     const t = await session();
     const v = await t.create(LIMITED);
