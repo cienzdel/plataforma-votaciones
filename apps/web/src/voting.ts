@@ -5,7 +5,7 @@
  */
 import { RSABSSA } from "@cloudflare/blindrsa-ts";
 import { checkReceipt, keyFingerprint, voteAck, type Board } from "@pv/core";
-import { api, cfg, postVote } from "./api.ts";
+import { api, cfg, getSession, postVote } from "./api.ts";
 
 const suite = RSABSSA.SHA384.PSS.Randomized();
 const hex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
@@ -58,7 +58,15 @@ function save(key: string, value: unknown): void {
   }
 }
 
-const k = (kind: string, votingId: string, right?: number) => `pv:${kind}:${votingId}` + (right === undefined ? "" : `:${right}`);
+/**
+ * Storage key of the logged-in member: credentials, votes and receipts belong to one member, so
+ * another member who logs in on the same browser never sees or spends them.
+ */
+function k(kind: string, votingId: string, right?: number): string {
+  const member = getSession()?.member.id;
+  if (member === undefined) throw new StorageError();
+  return `pv:${member}:${kind}:${votingId}` + (right === undefined ? "" : `:${right}`);
+}
 
 /**
  * Checks the key against the opening notice served by GitHub Pages when available (always for
@@ -133,7 +141,7 @@ export interface Receipt {
 }
 
 export function getReceipt(votingId: string, right: number): Receipt | null {
-  return load<Receipt>(k("receipt", votingId, right));
+  return getSession() === null ? null : load<Receipt>(k("receipt", votingId, right));
 }
 
 /** Sends one ballot; a retry re-sends the identical vote, which the server accepts again. */

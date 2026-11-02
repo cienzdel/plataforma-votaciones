@@ -4,7 +4,7 @@
  */
 import { AxeBuilder } from "@axe-core/playwright";
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 const MAIL = join(process.env.PV_E2E_DIR!, "mail");
@@ -38,6 +38,19 @@ async function login(browser: Browser, email: string): Promise<Page> {
   // Saved for h8-catalogue.spec.ts: a new code for the same address is refused for a minute.
   await page.context().storageState({ path: join(process.env.PV_E2E_DIR!, `state-${email}.json`) });
   return page;
+}
+
+/** Logs in on a page that is already open, waiting out the one-minute limit between codes. */
+async function loginHere(page: Page, email: string) {
+  const sent = page.getByText("te hemos enviado un código");
+  for (let i = 0; i < 15 && !(await sent.isVisible()); i++) {
+    await page.getByLabel("Correo electrónico").fill(email);
+    await page.getByRole("button", { name: "Enviarme un código" }).click();
+    await sent.waitFor({ timeout: 5_000 }).catch(() => null);
+  }
+  await page.getByLabel("Código de 8 cifras").fill(codeFor(email));
+  await page.getByRole("button", { name: "Entrar" }).click();
+  await expect(page.getByRole("button", { name: "Salir" })).toBeVisible();
 }
 
 async function vote(page: Page, ballot: string, option: string) {
@@ -106,10 +119,15 @@ test("officials, three voters and a proxy vote, accessible in Spanish and Englis
   const dos = await login(browser, "dos@example.org");
   await expect(dos.getByText("Tu voto")).toBeVisible({ timeout: 30_000 });
   await vote(dos, "Tu voto", "A favor");
-  // The officials vote from the voter view.
-  await mesa.getByRole("link", { name: "Votar" }).click();
-  await expect(mesa.getByText("Tu voto")).toBeVisible({ timeout: 30_000 });
-  await vote(mesa, "Tu voto", "Abstención");
+  // On the same browser, after Persona Dos logs out, an official votes from the voter view: they
+  // get their own ballot, not the previous member's credential, vote or receipt.
+  await dos.getByRole("button", { name: "Salir" }).click();
+  rmSync(join(process.env.PV_E2E_DIR!, "state-dos@example.org.json"));
+  await loginHere(dos, "mesa@example.org");
+  const own = dos.locator("form.ballot", { has: dos.getByText("Tu voto") });
+  await expect(own.getByRole("button", { name: "Revisar" })).toBeVisible({ timeout: 30_000 });
+  await expect(dos.getByText("Voto enviado y recibido.")).toHaveCount(0);
+  await vote(dos, "Tu voto", "Abstención");
 
   // Persona Tres delegated and is not present: no ballot.
   const tres = await login(browser, "tres@example.org");
