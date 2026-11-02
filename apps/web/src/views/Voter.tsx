@@ -2,7 +2,20 @@ import { useEffect, useState } from "preact/hooks";
 import { api, ApiError } from "../api.ts";
 import { t, type Key } from "../i18n.ts";
 import { errorText, Fingerprint, Result, Status, statusLabel, useAction, usePoll } from "../ui.tsx";
-import { castBallot, checkMyReceipts, ensureCredentials, getReceipt, KeyMismatchError, receiptFile, StorageError, type Credential, type Receipt, type VotingView } from "../voting.ts";
+import {
+  castBallot,
+  checkMyReceipts,
+  checkOpening,
+  ensureCredentials,
+  getReceipt,
+  KeyMismatchError,
+  NotPublishedError,
+  receiptFile,
+  StorageError,
+  type Credential,
+  type Receipt,
+  type VotingView,
+} from "../voting.ts";
 
 interface Meeting {
   id: string;
@@ -73,31 +86,54 @@ function VotingCard({ v, reload }: { v: VotingView; reload: () => void }) {
 }
 
 function Closed({ v }: { v: VotingView }) {
-  const check = checkMyReceipts(v);
+  const [check, setCheck] = useState<boolean | "pending" | null>(null);
+  useEffect(() => {
+    // Pages takes a while to serve a new board: try again until it does.
+    let stop = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const run = () =>
+      checkMyReceipts(v).then(
+        (c) => {
+          if (stop) return;
+          setCheck(c);
+          if (c === "pending") timer = setTimeout(run, 10_000);
+        },
+        () => !stop && setCheck("pending"),
+      );
+    void run();
+    return () => {
+      stop = true;
+      clearTimeout(timer);
+    };
+  }, [v.id]);
   return (
     <>
       <Result v={v} />
+      {check === "pending" && <Status>{t("check_pending")}</Status>}
       {check === true && <Status kind="ok">{t("check_ok")}</Status>}
       {check === false && <Status kind="error">{t("check_fail")}</Status>}
     </>
   );
 }
 
+/** Message for a failed check of the opening notice or of the credentials. */
+function openingError(e: unknown): string {
+  return e instanceof StorageError
+    ? t("error_storage")
+    : e instanceof KeyMismatchError
+      ? t("error_key")
+      : e instanceof NotPublishedError
+        ? t("error_not_published")
+        : e instanceof ApiError && e.code === "already_issued"
+          ? t("error_other_device")
+          : t("error_generic");
+}
+
 function Ballots({ v }: { v: VotingView }) {
   const [creds, setCreds] = useState<Credential[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    ensureCredentials(v).then(setCreds, (e: Error) =>
-      setError(
-        e instanceof StorageError
-          ? t("error_storage")
-          : e instanceof KeyMismatchError
-            ? t("error_key")
-            : e instanceof ApiError && e.code === "already_issued"
-              ? t("error_other_device")
-              : t("error_generic"),
-      ),
-    );
+    ensureCredentials(v).then(setCreds, (e: Error) => setError(openingError(e)));
   }, [v.id, v.my_rights]);
 
   if (error) return <Status kind="error">{error}</Status>;
@@ -113,6 +149,16 @@ function Ballots({ v }: { v: VotingView }) {
 }
 
 function NominalBallots({ v, reload }: { v: VotingView; reload: () => void }) {
+  // The names on the ballot must be the ones fixed in the opening notice.
+  const [checked, setChecked] = useState<true | string | null>(null);
+  useEffect(() => {
+    checkOpening(v).then(
+      () => setChecked(true),
+      (e: Error) => setChecked(openingError(e)),
+    );
+  }, [v.id]);
+  if (typeof checked === "string") return <Status kind="error">{checked}</Status>;
+  if (checked === null) return <Status>{t("loading")}</Status>;
   return (
     <>
       <p class="note">{t("roll_call_warning")}</p>

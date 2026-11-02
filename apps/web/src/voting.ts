@@ -4,7 +4,7 @@
  * survive a reload is saved in this browser before it is sent.
  */
 import { RSABSSA } from "@cloudflare/blindrsa-ts";
-import { checkReceipt, keyFingerprint, voteAck, type Board } from "@pv/core";
+import { hashJsonHex, jsonEqual, keyFingerprint, verifyBoard, voteAck, type Board, type ChainRecord } from "@pv/core";
 import { api, cfg, getSession, postVote } from "./api.ts";
 
 const suite = RSABSSA.SHA384.PSS.Randomized();
@@ -13,6 +13,7 @@ const hex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "
 const bytes = (h: string) => new Uint8Array(h.match(/../g)!.map((x) => parseInt(x, 16)));
 
 export interface Opening {
+  candidates_hash?: string | null;
   key: { fingerprint: string; public_key: string } | null;
   opened_at: string;
   closes_at: string | null;
@@ -34,12 +35,15 @@ export interface VotingView {
   params: Record<string, unknown>;
   opening: Opening | null;
   board: (Board & { result: Record<string, unknown> | null }) | null;
+  /** The whole candidates table (spec/formats.md §6), salt included, so that its hash can be checked. */
   candidates: { candidates: { id: string; name: string }[]; posts: { id: string; name: string }[] } | null;
   my_rights: number;
 }
 
 export class StorageError extends Error {}
 export class KeyMismatchError extends Error {}
+/** The opening notice is not on GitHub Pages, and it is too late for it to be still on its way. */
+export class NotPublishedError extends Error {}
 
 function load<T>(key: string): T | null {
   try {
@@ -68,25 +72,41 @@ function k(kind: string, votingId: string, right?: number): string {
   return `pv:${member}:${kind}:${votingId}` + (right === undefined ? "" : `:${right}`);
 }
 
+/** A JSON file of the data repository as GitHub Pages serves it, or null if it is not there. */
+async function fromPages<T>(path: string): Promise<T | null> {
+  const res = await fetch(`${cfg().data}/${path}`, { cache: "no-store", credentials: "omit" }).catch(() => null);
+  if (!res?.ok) return null;
+  return (await res.json().catch(() => null)) as T | null;
+}
+
+const DAY_MS = 86_400_000;
+/** How long after opening a live voting may be used before Pages serves its notice. */
+export const PAGES_GRACE_MS = 15 * 60_000;
+/** How many days back the notice of a voting is looked for, whatever date the API gives. */
+const LOOKBACK_DAYS = 7;
+const datePath = (ms: number) => new Date(ms).toISOString().slice(0, 10).replaceAll("-", "/");
+
 /**
- * Checks the key against the opening notice served by GitHub Pages when available (always for
- * final-link votings), otherwise against the one from the API (ADR-0008).
+ * Checks what the API says about an open voting against its opening notice on GitHub Pages
+ * (ADR-0008): the key, and the names shown on the ballot through `candidates_hash`. Where the notice
+ * is looked for, and whether it may be missing, does not rest on the API alone: the dates around
+ * today are tried too, and the API's copy is enough only for a live voting that opened minutes ago.
  */
-async function checkKey(v: VotingView): Promise<string> {
+export async function checkOpening(v: VotingView): Promise<void> {
   const opening = v.opening!;
-  const fp = keyFingerprint(opening.key!.public_key);
-  if (fp !== opening.key!.fingerprint) throw new KeyMismatchError();
-  const data = cfg().data;
-  if (data !== null) {
-    const path = `${opening.opened_at.slice(0, 10).replaceAll("-", "/")}/${v.id}.opening.json`;
-    const res = await fetch(`${data}/${path}`, { cache: "no-store", credentials: "omit" }).catch(() => null);
-    if (res?.ok) {
-      const published = (await res.json()) as Opening;
-      if (published.key?.public_key !== opening.key!.public_key) throw new KeyMismatchError();
-    } else if (opening.closes_at !== null) throw new KeyMismatchError();
+  if (opening.key !== null && keyFingerprint(opening.key.public_key) !== opening.key.fingerprint) throw new KeyMismatchError();
+  const names = v.candidates === null ? null : hashJsonHex(v.candidates);
+  if (cfg().data === null) return; // no public archive to check against
+  const now = Date.now();
+  const openedAt = Date.parse(opening.opened_at);
+  const days = [openedAt, ...Array.from({ length: LOOKBACK_DAYS + 1 }, (_, d) => now - d * DAY_MS)];
+  for (const day of new Set(days.filter(Number.isFinite).map(datePath))) {
+    const published = await fromPages<Opening & { voting_id: string }>(`${day}/${v.id}.opening.json`);
+    if (published === null) continue;
+    if (published.voting_id !== v.id || !jsonEqual(published.key, opening.key) || published.candidates_hash !== names) throw new KeyMismatchError();
+    return;
   }
-  save(k("fp", v.id), fp);
-  return fp;
+  if (opening.closes_at !== null || !(openedAt <= now + 60_000 && now - openedAt < PAGES_GRACE_MS)) throw new NotPublishedError();
 }
 
 interface Pending {
@@ -102,7 +122,12 @@ export interface Credential {
 
 /** Gets one credential per right, resuming any request interrupted before. */
 export async function ensureCredentials(v: VotingView): Promise<Credential[]> {
-  if (load(k("fp", v.id)) === null) await checkKey(v);
+  await checkOpening(v);
+  // Once a key was accepted for this voting, no other key is used for it.
+  const fp = keyFingerprint(v.opening!.key!.public_key);
+  const saved = load<string>(k("fp", v.id));
+  if (saved !== null && saved !== fp) throw new KeyMismatchError();
+  if (saved === null) save(k("fp", v.id), fp);
   const pk = await crypto.subtle.importKey("spki", bytes(v.opening!.key!.public_key), { name: "RSA-PSS", hash: "SHA-384" }, true, ["verify"]);
   const creds: Credential[] = [];
   for (let j = 0; j < v.my_rights; j++) {
@@ -157,13 +182,31 @@ export async function castBallot(v: VotingView, right: number, cred: Credential,
   return receipt;
 }
 
-/** Individual verification of every receipt of this browser against the board (spec/protocol.md §10.1). */
-export function checkMyReceipts(v: VotingView): boolean | null {
-  if (v.board === null) return null;
+interface ChainFile {
+  records: (ChainRecord & { path: string })[];
+}
+
+/**
+ * Individual verification of every receipt of this browser (spec/protocol.md §10.1), against the
+ * board, opening notice and chain published on GitHub Pages, never against what the API serves:
+ * the check must not take its board from the party it is meant to detect. Null when there is
+ * nothing to check (no receipt, or no public archive), "pending" while Pages does not serve the board.
+ */
+export async function checkMyReceipts(v: VotingView): Promise<boolean | "pending" | null> {
   const receipts = Array.from({ length: Math.max(v.my_rights, 0) }, (_, j) => getReceipt(v.id, j)).filter((r) => r !== null);
-  if (receipts.length === 0) return null;
+  if (receipts.length === 0 || cfg().data === null) return null;
+  const chain = await fromPages<ChainFile>("chain.json");
+  const record = chain?.records?.find((r) => typeof r.path === "string" && /^[0-9A-Za-z/_-]+\.board\.json$/.test(r.path) && r.path.split("/").at(-1) === `${v.id}.board.json`);
+  if (!chain || !record) return "pending";
+  const base = record.path.slice(0, -".board.json".length);
+  const [board, opening] = await Promise.all([fromPages<Board>(`${base}.board.json`), fromPages<unknown>(`${base}.opening.json`)]);
+  if (board === null || opening === null) return "pending";
+  for (const receipt of receipts) {
+    const report = await verifyBoard({ opening, board, chain, receipt });
+    if (!report.valid) return false;
+  }
   const fp = load<string>(k("fp", v.id));
-  return receipts.every((r) => checkReceipt(v.board as Board, r)) && (fp === null || v.board.key?.fingerprint === fp);
+  return fp === null || board.key?.fingerprint === fp;
 }
 
 export function receiptFile(r: Receipt): string {

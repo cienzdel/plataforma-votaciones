@@ -45,7 +45,7 @@ As soon as the voting opens, the browser of every member in the snapshot who is 
 
 **Client**, for each right `j`:
 
-1. Fetch the public key from the API and the opening notice from GitHub Pages with `cache: "no-store"`. Compute `H(SPKI)` and compare it with the reference: the opening notice on Pages if it is available (always for `final_link`), otherwise the opening notice served by the API. On mismatch, stop and show an error.
+1. Fetch the public key from the API and the opening notice from GitHub Pages with `cache: "no-store"`. Compute `H(SPKI)` and compare it with the reference, and compare `hex(HJ(candidates table))` served by the API with the notice's `candidates_hash`, so that the names on the ballot are the published ones. The reference is the opening notice on Pages, looked for under the date of `opened_at` and under each of the last 7 days by the client's clock. The opening notice served by the API is accepted instead only for a `live` voting whose `opened_at` is less than 15 minutes ago, while Pages may not serve it yet; nothing else the API says decides this. On mismatch, or if the notice is missing outside that window, stop and show an error. Roll-call ballots make the same check of `candidates_hash`.
 2. Draw `r` (32 bytes) and set `msg = voting_id ‖ r`.
 3. Run RFC 9474 `Prepare(msg)` → `token` (80 bytes, [`formats.md`](formats.md) §2.2) and `Blind(pk, token)` → `blinded_msg`, `inv`.
 4. Store `{voting_id, j, token, inv, blinded_msg}` in local storage **before** sending anything.
@@ -141,7 +141,7 @@ The officials' assistant proposes the next voting from each `single_winner` resu
 
 ### 10.1 Individual (in the browser)
 
-After the board is published, the client takes each receipt and checks that:
+After the board is published, the client fetches the chain, the board and its opening notice from GitHub Pages, never from the API, verifies the board as in §10.2 and takes each receipt and checks that:
 
 - `[token, sig]` is in `participation`;
 - for each cell `c`, `[H(tag("pv/cell/v1") ‖ s ‖ voting_id ‖ utf8(c)), answers[c]]` is in `cells[c]`;

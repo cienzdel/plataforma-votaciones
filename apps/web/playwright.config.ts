@@ -1,6 +1,7 @@
 /**
  * Browser tests: the API (session and reception), with a fresh database, e-mails written to a
- * folder and publication to a folder, plus the built web client. Fictitious data only.
+ * folder and publication to a folder served as GitHub Pages would be (e2e/pages.ts), plus the
+ * built web client. Fictitious data only.
  */
 import { defineConfig } from "@playwright/test";
 import { mkdtempSync } from "node:fs";
@@ -33,6 +34,7 @@ export default defineConfig({
   use: { baseURL: "http://localhost:4173", locale: "es-ES" },
   webServer: [
     { command: "node src/server.ts", cwd: "../api", env: apiEnv, url: "http://localhost:8080/health", reuseExistingServer: false },
+    { command: "node e2e/pages.ts", url: "http://localhost:4174/", reuseExistingServer: false },
     { command: "pnpm exec vite build && pnpm exec vite preview --port 4173 --strictPort", url: "http://localhost:4173", reuseExistingServer: false },
   ],
 });
