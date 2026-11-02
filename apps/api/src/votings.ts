@@ -531,7 +531,10 @@ export function votingRoutes(deps: Deps): Hono<AuthEnv> {
 
   app.post("/issue", async (c) => c.json({ blind_sig: issue(deps, me(c), await c.req.json()) }));
   app.post("/:id/nominal", async (c) => {
-    nominal(deps, getVoting(deps, c.req.param("id")), me(c), await c.req.json());
+    // The body first: the voting must be read after it, or a body held back past the close would
+    // be checked against the stale status.
+    const body = await c.req.json();
+    nominal(deps, getVoting(deps, c.req.param("id")), me(c), body);
     return c.json(view(deps, getVoting(deps, c.req.param("id")), me(c)), 201);
   });
 
@@ -555,7 +558,8 @@ export function votingRoutes(deps: Deps): Hono<AuthEnv> {
   });
 
   app.post("/:id/tallies", async (c) => {
-    enterTallies(deps, getVoting(deps, c.req.param("id")), await c.req.json());
+    const body = await c.req.json();
+    enterTallies(deps, getVoting(deps, c.req.param("id")), body);
     return c.json(view(deps, getVoting(deps, c.req.param("id")), me(c)));
   });
 

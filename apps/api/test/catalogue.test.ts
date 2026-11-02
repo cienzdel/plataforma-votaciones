@@ -135,6 +135,41 @@ describe("tie-break draws", () => {
     expect(await t.verifyPublished(v.id)).toMatchObject({ valid: true });
   });
 
+  it("refuses a named vote whose body arrives after the voting closed", async () => {
+    const t = await session();
+    const v = await t.create({
+      title: "Committee posts",
+      method: "posts",
+      mode: "roll_call",
+      params: { posts: ["comms", "sports"], candidates: [{ id: "c1", preferences: ["comms", "sports"] }, { id: "c2", preferences: ["comms"] }] },
+      candidates: [{ id: "c1", name: "Persona Candidata 1" }, { id: "c2", name: "Persona Candidata 2" }],
+      posts: [{ id: "comms", name: "Communication" }, { id: "sports", name: "Sports" }],
+      timing: "final_link",
+      closes_at: formatTimestamp(ROUND_MS),
+      draw_commitment: COMMITMENT,
+    });
+    // The headers arrive while the voting is open; the body is held back until after the close.
+    let send!: ReadableStreamDefaultController<Uint8Array>;
+    const body = new ReadableStream<Uint8Array>({ start: (c) => void (send = c) });
+    const pending = t.app.request(`/votings/${v.id}/nominal`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + t.tokens.p2 },
+      body,
+      duplex: "half",
+    } as RequestInit);
+    for (let i = 0; i < 20; i++) await new Promise((r) => setTimeout(r, 0));
+    t.clock.t = ROUND_MS;
+    await closeDue(t.deps);
+    expect((await t.call("GET", `/votings/${v.id}`, undefined, t.official)).body.status).toBe("awaiting_draw");
+    send.enqueue(new TextEncoder().encode(JSON.stringify({ right: 0, answers: { "c1@comms": "for", "c1@sports": "for", "c2@comms": "for" } })));
+    send.close();
+    const res = await pending;
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: "voting_not_open" });
+    const done = (await t.call("POST", `/votings/${v.id}/reveal`, { seed: SEED }, t.official)).body;
+    expect(done.board.counters.received).toBe(0);
+  });
+
   it("waits while the round does not exist, and can be annulled before the draw", async () => {
     const t = await session();
     const v = await t.create(LIMITED);
