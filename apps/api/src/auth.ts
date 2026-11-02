@@ -3,13 +3,24 @@
  * Only hashes of codes and session tokens are stored. Attempts are limited in memory (ADR-0018).
  */
 import { randomBytes, randomInt } from "node:crypto";
-import { and, count, eq, lt } from "drizzle-orm";
+import { and, count, eq, isNotNull, lt } from "drizzle-orm";
 import { Hono, type MiddlewareHandler } from "hono";
 import { HttpError, sha256Hex, type Deps } from "./context.ts";
 import { authCode, authSession, member, roleAssignment } from "./db/schema.ts";
 
 export const CODE_TTL_MS = 10 * 60_000;
+/** Wrong guesses allowed per request for a mailed code. */
 export const CODE_ATTEMPTS = 5;
+/**
+ * Assisted codes are longer, so they need no attempt limit that a third party could exhaust:
+ * 10^12 values against at most a few hundred thousand guesses in their 10 minutes.
+ */
+export const ASSISTED_CODE_DIGITS = 12;
+/**
+ * Login-code mails per hour for the whole census (40-60 people), so that an outsider who knows
+ * addresses cannot spend the quota that result and assisted-login notices need (ADR-0014).
+ */
+export const CODE_MAILS_PER_HOUR = 120;
 export const SESSION_TTL_MS = 12 * 3600_000;
 /** Minimum time between two codes requested for the same address. */
 export const CODE_INTERVAL_MS = 60_000;
@@ -25,19 +36,30 @@ export function normaliseEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-function newCode(): string {
-  return String(randomInt(0, 100_000_000)).padStart(8, "0");
+function newCode(digits: number): string {
+  return String(randomInt(0, 10 ** digits)).padStart(digits, "0");
 }
+
+/** Key of a mailed code: the hash of the request id that only the asking browser holds. */
+const requestKey = (request: string) => sha256Hex("pv/login-request", request);
 
 export function isOfficial(deps: Deps, memberId: string): boolean {
   return deps.db.select().from(roleAssignment).where(eq(roleAssignment.memberId, memberId)).get() !== undefined;
 }
 
-/** Stores a fresh code for a member, replacing any previous one, and returns it. */
-function issueCode(deps: Deps, memberId: string, assistedBy: string | null): string {
-  const code = newCode();
-  const row = { memberId, codeHash: codeHash(memberId, code), expiresAt: deps.now() + CODE_TTL_MS, attempts: 0, assistedBy };
-  deps.db.insert(authCode).values(row).onConflictDoUpdate({ target: authCode.memberId, set: row }).run();
+/** Stores a fresh mailed code for the browser that holds `request`, and returns it. */
+function issueMailedCode(deps: Deps, memberId: string, request: string): string {
+  const code = newCode(8);
+  deps.db.delete(authCode).where(lt(authCode.expiresAt, deps.now())).run();
+  deps.db.insert(authCode).values({ id: requestKey(request), memberId, codeHash: codeHash(memberId, code), expiresAt: deps.now() + CODE_TTL_MS, attempts: 0, assistedBy: null }).run();
+  return code;
+}
+
+/** Stores a fresh assisted code, replacing only the member's previous assisted code, and returns it. */
+function issueAssistedCode(deps: Deps, memberId: string, assistedBy: string): string {
+  const code = newCode(ASSISTED_CODE_DIGITS);
+  deps.db.delete(authCode).where(and(eq(authCode.memberId, memberId), isNotNull(authCode.assistedBy))).run();
+  deps.db.insert(authCode).values({ id: randomBytes(16).toString("hex"), memberId, codeHash: codeHash(memberId, code), expiresAt: deps.now() + CODE_TTL_MS, attempts: 0, assistedBy }).run();
   return code;
 }
 
@@ -65,36 +87,57 @@ export const requireOfficial: MiddlewareHandler<AuthEnv> = async (c, next) => {
 export function authRoutes(deps: Deps): Hono<AuthEnv> {
   const app = new Hono<AuthEnv>();
   const lastRequest = new Map<string, number>();
+  let mailsSent: number[] = [];
 
-  /** Always answers 202, so that the response does not reveal who is in the census. */
+  /**
+   * Always answers 202 with a fresh request id, at once, so that neither the response nor its
+   * timing reveals who is in the census or whether the mail provider failed. The code only works
+   * together with that request id.
+   */
   app.post("/code", async (c) => {
     const { email } = await c.req.json<{ email?: unknown }>();
     if (typeof email !== "string") throw new HttpError(400, "invalid_email");
     const address = normaliseEmail(email);
+    const now = deps.now();
     const last = lastRequest.get(address);
-    if (last !== undefined && deps.now() - last < CODE_INTERVAL_MS) throw new HttpError(429, "too_many_requests");
-    lastRequest.set(address, deps.now());
+    if (last !== undefined && now - last < CODE_INTERVAL_MS) throw new HttpError(429, "too_many_requests");
+    lastRequest.set(address, now);
+    const request = randomBytes(24).toString("base64url");
+    mailsSent = mailsSent.filter((at) => now - at < 3600_000);
     const m = deps.db.select().from(member).where(and(eq(member.email, address), eq(member.active, true))).get();
-    if (m !== undefined) {
-      const code = issueCode(deps, m.id, null);
-      await deps.mailer.send({
-        to: m.email,
-        subject: "Código de acceso · Login code",
-        text: `Tu código de acceso es ${code}. Caduca en 10 minutos.\nYour login code is ${code}. It expires in 10 minutes.\n\n${deps.webOrigin}`,
-      });
+    if (m !== undefined && mailsSent.length < CODE_MAILS_PER_HOUR) {
+      mailsSent.push(now);
+      const code = issueMailedCode(deps, m.id, request);
+      // Not awaited, and a failure is not reported: the person can ask the officials for an assisted code.
+      deps.mailer
+        .send({
+          to: m.email,
+          subject: "Código de acceso · Login code",
+          text: `Tu código de acceso es ${code}. Caduca en 10 minutos.\nYour login code is ${code}. It expires in 10 minutes.\n\n${deps.webOrigin}`,
+        })
+        .catch(() => undefined);
     }
-    return c.json({ status: "sent_if_registered" }, 202);
+    return c.json({ status: "sent_if_registered", request }, 202);
   });
 
   app.post("/session", async (c) => {
-    const { email, code } = await c.req.json<{ email?: unknown; code?: unknown }>();
-    if (typeof email !== "string" || typeof code !== "string") throw new HttpError(400, "invalid_request");
+    const { email, code, request } = await c.req.json<{ email?: unknown; code?: unknown; request?: unknown }>();
+    if (typeof email !== "string" || typeof code !== "string" || (request !== undefined && typeof request !== "string")) throw new HttpError(400, "invalid_request");
+    const entered = code.replace(/\s/g, "");
     const m = deps.db.select().from(member).where(and(eq(member.email, normaliseEmail(email)), eq(member.active, true))).get();
-    const row = m && deps.db.select().from(authCode).where(eq(authCode.memberId, m.id)).get();
-    if (!m || !row || row.expiresAt <= deps.now() || row.attempts >= CODE_ATTEMPTS) throw new HttpError(401, "invalid_code");
-    if (row.codeHash !== codeHash(m.id, code.trim())) {
-      deps.db.update(authCode).set({ attempts: row.attempts + 1 }).where(eq(authCode.memberId, m.id)).run();
-      throw new HttpError(401, "invalid_code");
+    if (!m) throw new HttpError(401, "invalid_code");
+    if (entered.length === ASSISTED_CODE_DIGITS) {
+      // Assisted: no attempt limit, so guesses by others cannot lock the person out.
+      const row = deps.db.select().from(authCode).where(and(eq(authCode.memberId, m.id), isNotNull(authCode.assistedBy), eq(authCode.codeHash, codeHash(m.id, entered)))).get();
+      if (!row || row.expiresAt <= deps.now()) throw new HttpError(401, "invalid_code");
+    } else {
+      // Mailed: only with the request id of the browser that asked, whose attempts are its own.
+      const row = typeof request === "string" ? deps.db.select().from(authCode).where(eq(authCode.id, requestKey(request))).get() : undefined;
+      if (!row || row.memberId !== m.id || row.assistedBy !== null || row.expiresAt <= deps.now() || row.attempts >= CODE_ATTEMPTS) throw new HttpError(401, "invalid_code");
+      if (row.codeHash !== codeHash(m.id, entered)) {
+        deps.db.update(authCode).set({ attempts: row.attempts + 1 }).where(eq(authCode.id, row.id)).run();
+        throw new HttpError(401, "invalid_code");
+      }
     }
     deps.db.delete(authCode).where(eq(authCode.memberId, m.id)).run();
     deps.db.delete(authSession).where(lt(authSession.expiresAt, deps.now())).run();
@@ -123,7 +166,7 @@ export function authRoutes(deps: Deps): Hono<AuthEnv> {
     const { member_id } = await c.req.json<{ member_id?: unknown }>();
     const m = typeof member_id === "string" ? deps.db.select().from(member).where(eq(member.id, member_id)).get() : undefined;
     if (m === undefined || !m.active) throw new HttpError(404, "member_not_found");
-    const code = issueCode(deps, m.id, c.get("member").id);
+    const code = issueAssistedCode(deps, m.id, c.get("member").id);
     await deps.mailer.send({
       to: m.email,
       subject: "Acceso asistido · Assisted login",

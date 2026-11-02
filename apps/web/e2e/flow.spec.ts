@@ -129,8 +129,25 @@ test("officials, three voters and a proxy vote, accessible in Spanish and Englis
   await expect(dos.getByText("Voto enviado y recibido.")).toHaveCount(0);
   await vote(dos, "Tu voto", "Abstención");
 
-  // Persona Tres delegated and is not present: no ballot.
-  const tres = await login(browser, "tres@example.org");
+  // Persona Tres delegated and is not present: no ballot. Logs in with an assisted code, which a
+  // mailed-code request for the same address does not replace.
+  await mesa.getByRole("button", { name: "Acceso asistido" }).click();
+  await mesa.getByLabel("Persona", { exact: true }).selectOption({ label: "Persona Tres" });
+  await mesa.getByRole("button", { name: "Generar código" }).click();
+  const assisted = (await mesa.getByText(/Código para Persona Tres: /).textContent())!.replace(/^.*: /, "");
+  await axe(mesa, "assisted");
+  const tres = await (await browser.newContext({ locale: "es-ES" })).newPage();
+  await tres.goto("/");
+  await tres.getByLabel("Correo electrónico").fill("tres@example.org");
+  await tres.getByRole("button", { name: "Enviarme un código" }).click();
+  await expect(tres.getByText("te hemos enviado un código")).toBeVisible();
+  await tres.reload();
+  await tres.getByLabel("Correo electrónico").fill("tres@example.org");
+  await tres.getByRole("button", { name: "Tengo un código de la mesa" }).click();
+  await tres.getByLabel("Código de la mesa (12 cifras)").fill(assisted);
+  await axe(tres, "assisted login");
+  await tres.getByRole("button", { name: "Entrar" }).click();
+  await expect(tres.getByRole("button", { name: "Salir" })).toBeVisible();
   await expect(tres.getByText("No estabas presente cuando se abrió esta votación.")).toBeVisible({ timeout: 30_000 });
 
   // Projection, then closing.

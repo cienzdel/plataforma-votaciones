@@ -40,9 +40,14 @@ export const roleLog = sqliteTable("role_log", {
   at: integer("at").notNull(),
 });
 
-/** One-time login codes; only a hash is kept. Deleted when used or expired. */
+/**
+ * One-time login codes; only a hash is kept. Deleted when used or expired. A mailed code is keyed
+ * by the hash of the request id that only the asking browser holds, and its attempts count for
+ * that request alone. An assisted code has its own random key and `assisted_by`.
+ */
 export const authCode = sqliteTable("auth_code", {
-  memberId: text("member_id").primaryKey().references(() => member.id),
+  id: text("id").primaryKey(),
+  memberId: text("member_id").notNull().references(() => member.id),
   codeHash: text("code_hash").notNull(),
   expiresAt: integer("expires_at").notNull(),
   attempts: integer("attempts").notNull(),

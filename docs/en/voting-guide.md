@@ -15,7 +15,7 @@
 2. Enter your e-mail address. You will receive a **single-use code** valid for 10 minutes.
 3. Enter it. Your session lasts 12 hours.
 
-If you cannot reach your e-mail in the room, ask the officials for **assisted access**: they check your identity in person and give you a code. You will get an e-mail telling you this happened.
+If you cannot reach your e-mail in the room, ask the officials for **assisted access**: they check your identity in person and give you a 12-digit code. On the login screen, enter your e-mail address and choose "I have a code from the officials". You will get an e-mail telling you this happened.
 
 ## Voting
 

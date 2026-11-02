@@ -122,7 +122,7 @@
 ### A7. External Internet attacker
 
 - **Protected:**
-  - **Access:** single-use codes valid for 10 minutes with 5 attempts, and rate limiting.
+  - **Access:** single-use codes valid for 10 minutes. A mailed code works only with the request id held by the browser that asked for it, with 5 attempts per request, so nobody else can use up its attempts. Assisted codes have 12 digits and no attempt limit. One code per address per minute and 120 code e-mails per hour in total. The answer to a code request is the same, and as fast, whether or not the address is in the census.
   - **Vote tampering:** requires valid signed credentials.
   - **Interface:** security headers, CodeQL and Dependabot.
 - **NOT protected:**

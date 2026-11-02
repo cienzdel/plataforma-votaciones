@@ -49,8 +49,8 @@ export function setup(trace?: (sql: string) => void) {
 
   async function login(email: string): Promise<string> {
     clock.t += 61_000; // past the per-address interval
-    await call("POST", "/auth/code", { email });
-    const res = await call("POST", "/auth/session", { email, code: lastCode(email) });
+    const { request } = (await call("POST", "/auth/code", { email })).body;
+    const res = await call("POST", "/auth/session", { email, code: lastCode(email), request });
     if (res.status !== 200) throw new Error("login failed: " + JSON.stringify(res.body));
     return res.body.token;
   }

@@ -105,7 +105,7 @@
 
 | | |
 |---|---|
-| **Protege** | **Acceso:** códigos de un solo uso con 10 min de vida y 5 intentos, y limitación de intentos en memoria. **Manipulación de votos:** requiere credenciales firmadas válidas. **Interfaz:** cabeceras de seguridad (CSP) y dependencias revisadas por CodeQL y Dependabot. |
+| **Protege** | **Acceso:** códigos de un solo uso con 10 min de vida. Un código por correo solo vale con el identificador de petición que guarda el navegador que lo pidió, con 5 intentos por petición, así que nadie más puede agotarlos. Los códigos asistidos tienen 12 cifras y no tienen límite de intentos. Un código por dirección y minuto y 120 correos de código por hora en total. La respuesta a una petición de código es igual, y igual de rápida, esté o no la dirección en el censo. **Manipulación de votos:** requiere credenciales firmadas válidas. **Interfaz:** cabeceras de seguridad (CSP) y dependencias revisadas por CodeQL y Dependabot. |
 | **NO protege** | **Denegación de servicio** contra la VM durante una votación en directo (no hay CDN ni mitigación de DDoS en el plan elegido). Plan: reanudar si vuelve en 10 min o menos; si no, anular y repetir en papel. |
 | **Mitigaciones** | La VM solo está encendida durante las sesiones y la URL de la API cambia en cada arranque. |
 

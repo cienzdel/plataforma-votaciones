@@ -300,7 +300,8 @@ function AssistedPanel({ members }: PanelProps) {
           e.preventDefault();
           void a.run(async () => {
             const { code } = await api<{ code: string }>("POST", "/auth/assisted-code", { member_id: who });
-            return t("assisted_code", { name: members.find((m) => m.id === who)?.name ?? "", code });
+            // In groups of four, easier to read out and type.
+            return t("assisted_code", { name: members.find((m) => m.id === who)?.name ?? "", code: code.replace(/(\d{4})(?=\d)/g, "$1 ") });
           });
         }}
       >

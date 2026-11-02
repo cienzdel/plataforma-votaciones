@@ -20,9 +20,9 @@ Las variables de entorno están descritas en · Environment variables are descri
 
 | Route | Who | What |
 |---|---|---|
-| `POST /auth/code`, `POST /auth/session` | anyone | Request a login code; exchange it for a 12-hour bearer session. |
+| `POST /auth/code`, `POST /auth/session` | anyone | Request a login code, which only works with the `request` id returned to the asking browser; exchange it for a 12-hour bearer session. At most 120 code e-mails per hour in total. |
 | `GET /auth/me`, `POST /auth/logout` | member | |
-| `POST /auth/assisted-code` | mesa | Code for a person whose identity was checked face to face; recorded and notified. |
+| `POST /auth/assisted-code` | mesa | 12-digit code for a person whose identity was checked face to face; recorded and notified. Requests for a mailed code do not replace it. |
 | `GET /census`, `POST /census/import` | mesa | CSV `name,email,degrees` (degrees separated by `;`); `dry_run`; `reason` while a meeting is open. |
 | `GET /roles/log` | anyone | Public log of role changes, by alias. |
 | `GET /roles`, `POST /roles`, `DELETE /roles/:memberId` | mesa | 1–3 officials. |

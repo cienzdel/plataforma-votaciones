@@ -15,7 +15,7 @@
 2. Escribe tu correo. Recibirás un **código de un solo uso** que caduca a los 10 minutos.
 3. Introdúcelo. La sesión dura 12 horas.
 
-Si en la sala no puedes acceder a tu correo, pide a la mesa un **acceso asistido**: comprobará tu identidad en persona y te dará un código. Recibirás un correo informándote de ello.
+Si en la sala no puedes acceder a tu correo, pide a la mesa un **acceso asistido**: comprobará tu identidad en persona y te dará un código de 12 cifras. En la pantalla de entrada, escribe tu correo y elige «Tengo un código de la mesa». Recibirás un correo informándote de ello.
 
 ## Votar
 
