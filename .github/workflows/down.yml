@@ -42,12 +42,18 @@ jobs:
       - name: Install hcloud
         if: env.PROVIDER == 'hetzner'
         run: curl -fsSL "https://github.com/hetznercloud/cli/releases/download/v${HCLOUD_VERSION}/hcloud-linux-amd64.tar.gz" | sudo tar -xz -C /usr/local/bin hcloud
-      - name: Deploy key
+      - name: Deploy key and the VM's host key
         env:
           KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          HOST_KEY: ${{ secrets.PV_SSH_HOST_KEY }}
         run: |
           install -m 600 /dev/null key
           printf '%s\n' "$KEY" > key
+          # Only the public half is kept: it is what the VM must prove it holds.
+          install -m 600 /dev/null hostkey
+          printf '%s\n' "$HOST_KEY" > hostkey
+          ssh-keygen -y -f hostkey > hostkey.pub
+          shred -u hostkey
       - name: Encrypted backup
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
@@ -59,11 +65,13 @@ jobs:
           user=root
           sudo=""
           if [ "$PROVIDER" = oracle ]; then user=ubuntu; sudo=sudo; fi
-          ssh="ssh -i key -o StrictHostKeyChecking=accept-new $user@$ip"
+          printf '%s %s\n' "$ip" "$(cat hostkey.pub)" > known_hosts
+          opts="-i key -o StrictHostKeyChecking=yes -o UserKnownHostsFile=known_hosts"
+          ssh="ssh $opts $user@$ip"
           name="pv-$(date -u +%Y%m%dT%H%M%SZ).db.age"
           printf '%s\n' "$RECIPIENTS" | $ssh "cat > /tmp/recipients"
           $ssh "cd /opt/pv/src && $sudo sh infra/scripts/backup.sh /tmp/recipients /tmp/$name && $sudo chown $user /tmp/$name"
-          scp -i key "$user@$ip:/tmp/$name" "$name"
+          scp $opts "$user@$ip:/tmp/$name" "$name"
           # The stack stops and its containers, whose configuration holds the environment, are
           # removed; then the secrets file goes too, so the stopped disk or the snapshot does not
           # keep the master key next to the database. The next Up writes a fresh one. fstrim then

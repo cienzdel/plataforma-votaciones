@@ -6,7 +6,8 @@
 # Needs the OCI CLI configured (~/.oci/config) and these variables:
 #   OCI_COMPARTMENT_OCID, OCI_SUBNET_OCID (public subnet), OCI_AVAILABILITY_DOMAIN
 #
-#   oracle.sh up <ssh public key file>    starts (or creates) the VM; prints its public IPv4
+#   oracle.sh up <ssh public key file> <host private key file>
+#                                         starts (or creates) the VM; prints its public IPv4
 #   oracle.sh down                        stops the VM
 set -eu
 instance=${PV_INSTANCE:-pv}
@@ -22,12 +23,16 @@ instance_id() {
 case ${1:-} in
   up)
     key=$2
+    hostkey=$3
     id=$(instance_id)
     if [ -z "$id" ] || [ "$id" = "null" ]; then
       # Free Arm capacity is often exhausted ("Out of host capacity", or 429). Each attempt tries the
       # Always Free shapes from largest to smallest: Arm 2 OCPU/12 GB, Arm 1 OCPU/6 GB, AMD micro 1 GB.
       attempt=1
       id=""
+      userdata=$(mktemp)
+      trap 'shred -u "$userdata" 2>/dev/null || rm -f "$userdata"' EXIT
+      sh "$here/user-data.sh" full "$hostkey" "$key" > "$userdata"
       while [ -z "$id" ]; do
         for shape in "VM.Standard.A1.Flex 2 12" "VM.Standard.A1.Flex 1 6" "VM.Standard.E2.1.Micro"; do
           # shellcheck disable=SC2086 # split "shape ocpus memory" on purpose
@@ -44,7 +49,7 @@ case ${1:-} in
           if id=$(oci compute instance launch --compartment-id "$compartment" --availability-domain "$OCI_AVAILABILITY_DOMAIN" \
             --display-name "$instance" --shape "$1" ${config:+--shape-config file://$config} \
             --image-id "$image" --subnet-id "$OCI_SUBNET_OCID" --assign-public-ip true \
-            --ssh-authorized-keys-file "$key" --user-data-file "$here/../cloud-init.yaml" \
+            --ssh-authorized-keys-file "$key" --user-data-file "$userdata" \
             --wait-for-state RUNNING --query 'data.id' --raw-output 2>/tmp/oci-launch.err); then
             echo "created $instance with shape $shape" >&2
             break
@@ -75,7 +80,7 @@ case ${1:-} in
     oci compute instance list-vnics --instance-id "$(instance_id)" --query 'data[0]."public-ip"' --raw-output
     ;;
   *)
-    echo "usage: oracle.sh up <ssh public key file> | down | ip" >&2
+    echo "usage: oracle.sh up <ssh public key file> <host private key file> | down | ip" >&2
     exit 2
     ;;
 esac

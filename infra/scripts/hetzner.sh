@@ -2,7 +2,8 @@
 # Hetzner Cloud adapter for `up` and `down` (ADR-0017): the paid option, entirely in an EU company.
 # Needs the hcloud CLI and HCLOUD_TOKEN. Every resource carries the label pv-instance=$PV_INSTANCE.
 #
-#   hetzner.sh up <ssh public key file>     creates the VM (from the last snapshot if any); prints its IPv4
+#   hetzner.sh up <ssh public key file> <host private key file>
+#                                           creates the VM (from the last snapshot if any); prints its IPv4
 #   hetzner.sh down                         shuts the VM down, snapshots it and deletes it
 #   hetzner.sh ip                           prints the IPv4 of the running VM
 set -eu
@@ -25,18 +26,24 @@ firewall() {
 case ${1:-} in
   up)
     key=$2
+    hostkey=$3
+    userdata=$(mktemp)
+    trap 'shred -u "$userdata" 2>/dev/null || rm -f "$userdata"' EXIT
     # The newest snapshot of this instance, or a fresh Ubuntu with cloud-init.
     snapshot=$(hcloud image list --type snapshot --selector "$label" -o noheader -o columns=id | sort -n | tail -n 1)
     hcloud ssh-key delete "$instance-deploy" >/dev/null 2>&1 || true
     hcloud ssh-key create --name "$instance-deploy" --public-key-from-file "$key" --label "$label" >/dev/null
     firewall
     if [ -n "$snapshot" ]; then
+      sh "$here/user-data.sh" restore "$hostkey" "$key" > "$userdata"
       hcloud server create --name "$instance" --type "$type" --location "$location" --image "$snapshot" \
-        --ssh-key "$instance-deploy" --firewall "$instance" --label "$label" >/dev/null
+        --ssh-key "$instance-deploy" --firewall "$instance" --label "$label" \
+        --user-data-from-file "$userdata" >/dev/null
     else
+      sh "$here/user-data.sh" full "$hostkey" "$key" > "$userdata"
       hcloud server create --name "$instance" --type "$type" --location "$location" --image ubuntu-24.04 \
         --ssh-key "$instance-deploy" --firewall "$instance" --label "$label" \
-        --user-data-from-file "$here/../cloud-init.yaml" >/dev/null
+        --user-data-from-file "$userdata" >/dev/null
     fi
     hcloud server ip "$instance"
     ;;
@@ -54,7 +61,7 @@ case ${1:-} in
     hcloud server ip "$instance"
     ;;
   *)
-    echo "usage: hetzner.sh up <ssh public key file> | down | ip" >&2
+    echo "usage: hetzner.sh up <ssh public key file> <host private key file> | down | ip" >&2
     exit 2
     ;;
 esac
