@@ -402,7 +402,10 @@ async function reveal(deps: Deps, v: Voting, seed: unknown): Promise<Voting> {
   return finish(deps, v, "closed", draw);
 }
 
-/** Publishes the board with its companion files and the chain in one commit; then notifies and erases. */
+/**
+ * Publishes the board with its companion files and the chain in one commit; then erases and
+ * notifies. Answers 502 `notices_failed` if some result notice could not be sent.
+ */
 export async function publish(deps: Deps, v: Voting): Promise<void> {
   if (v.board === null || v.publishedAt !== null) throw new HttpError(409, "nothing_to_publish");
   const files: File[] = [jsonFile(basePath(v) + ".board.json", v.board)];
@@ -410,41 +413,57 @@ export async function publish(deps: Deps, v: Voting): Promise<void> {
   if (v.rollCall !== null) files.push(jsonFile(basePath(v) + ".roll_call.json", v.rollCall));
   files.push(chainFile(deps));
   await deps.publisher.publish(files, `${v.status === "closed" ? "Close" : "Annul"} voting ${v.id}`);
-  deps.db.update(voting).set({ publishedAt: deps.now() }).where(eq(voting.id, v.id)).run();
-  await notify(deps, v, recordOf(deps, v.board));
-  if (rulesOf(v).mode === "secret") {
-    // Erase s and the grouped ballots; only the spent tokens remain (spec/protocol.md §7 step 8).
-    deps.db.delete(ballotReceived).where(eq(ballotReceived.votingId, v.id)).run();
-    deps.db.run(sql`VACUUM`);
-  }
+  // Marked published and erased in one step, before any notice: a failed e-mail must not leave s
+  // and the grouped ballots behind, as nothing would erase them later (spec/protocol.md §7 step 8).
+  // Only the spent tokens remain.
+  deps.db.transaction((tx) => {
+    tx.update(voting).set({ publishedAt: deps.now() }).where(eq(voting.id, v.id)).run();
+    tx.delete(ballotReceived).where(eq(ballotReceived.votingId, v.id)).run();
+  });
+  if (rulesOf(v).mode === "secret") deps.db.run(sql`VACUUM`);
+  if ((await notify(deps, v, recordOf(deps, v.board))) > 0) throw new HttpError(502, "notices_failed");
 }
 
-/** Tells the electorate that the result is published; in `secret` mode, with the credentials issued (ADR-0007). */
-async function notify(deps: Deps, v: Voting, recordHash: string): Promise<void> {
+/**
+ * Tells the electorate that the result is published; in `secret` mode, with the credentials issued
+ * (ADR-0007). One failed e-mail does not stop the others. Returns how many failed.
+ */
+async function notify(deps: Deps, v: Voting, recordHash: string): Promise<number> {
   const r = rulesOf(v);
   const issued = new Map(
     deps.db.select({ memberId: issuance.memberId, n: count() }).from(issuance).where(eq(issuance.votingId, v.id)).groupBy(issuance.memberId).all().map((x) => [x.memberId, x.n]),
   );
   const electorate = deps.db.select().from(member).where(eq(member.active, true)).all().filter((m) => r.electorate_filter === null || m.degrees.includes(r.electorate_filter));
+  let failed = 0;
   for (const m of electorate) {
     const n = issued.get(m.id) ?? 0;
     const es = r.mode === "secret" ? `\nSe emitieron ${n} credenciales a tu nombre. Si no coincide con lo que hiciste, avisa a la mesa.` : "";
     const en = r.mode === "secret" ? `\n${n} credentials were issued in your name. If this does not match what you did, tell the officials.` : "";
-    await deps.mailer.send({
-      to: m.email,
-      subject: `Resultado publicado · Result published: ${v.title}`,
-      text: `Se ha publicado el resultado de «${v.title}». Hash del registro: ${recordHash}${es}\n\nThe result of "${v.title}" has been published. Record hash: ${recordHash}${en}\n\n${deps.webOrigin}`,
-    });
+    await deps.mailer
+      .send({
+        to: m.email,
+        subject: `Resultado publicado · Result published: ${v.title}`,
+        text: `Se ha publicado el resultado de «${v.title}». Hash del registro: ${recordHash}${es}\n\nThe result of "${v.title}" has been published. Record hash: ${recordHash}${en}\n\n${deps.webOrigin}`,
+      })
+      .catch(() => failed++);
   }
+  return failed;
 }
 
 /** Closes every final-link voting whose time has come, and publishes it unless it waits for a draw. */
 export async function closeDue(deps: Deps): Promise<void> {
   const due = deps.db.select().from(voting).where(inArray(voting.status, ["open", "awaiting_pages"])).all().filter((v) => v.closesAt !== null && v.closesAt <= deps.now());
+  let error: unknown = null;
   for (const v of due) {
-    const closed = close(deps, v, "closed", null);
-    if (closed.status === "closed") await publish(deps, closed);
+    // One voting's failure (its publication or a notice) does not hold back the others.
+    try {
+      const closed = close(deps, v, "closed", null);
+      if (closed.status === "closed") await publish(deps, closed);
+    } catch (e) {
+      error ??= e;
+    }
   }
+  if (error !== null) throw error;
 }
 
 /** Winners of the published tie draw of a voting, or null (spec/draws.md §6). */

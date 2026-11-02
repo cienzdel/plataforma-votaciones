@@ -176,6 +176,28 @@ describe("secret voting, live", () => {
     expect(t.deps.db.select().from(ballotReceived).all()).toEqual([]);
   });
 
+  it("erases the ballots and sends the other notices when a result notice fails", async () => {
+    const t = await session();
+    const v = await t.createAndOpen();
+    expect((await cast(t.reception, v.id, await t.credential(v.id, t.tokens.p2), { q: "for" })).status).toBe(200);
+    const send = t.deps.mailer.send.bind(t.deps.mailer);
+    let first = true;
+    const spy = vi.spyOn(t.deps.mailer, "send").mockImplementation(async (m) => {
+      if (m.subject.startsWith("Resultado") && first) {
+        first = false;
+        throw new Error("provider refused");
+      }
+      return send(m);
+    });
+    const before = t.mailer.sent.length;
+    const closed = await t.call("POST", `/votings/${v.id}/close`, undefined, t.official);
+    spy.mockRestore();
+    expect(closed).toMatchObject({ status: 502, body: { error: "notices_failed" } });
+    expect(t.deps.db.select().from(ballotReceived).all()).toEqual([]);
+    const results = t.mailer.sent.slice(before).filter((m) => m.subject.startsWith("Resultado"));
+    expect(results.length).toBe(t.members.length - 1); // the whole census but the one that failed
+  });
+
   it("requires a reason to open without quorum, and publishes it", async () => {
     const t = await session();
     const body = { ...YES_NO, min_attendance: [1, 2] };

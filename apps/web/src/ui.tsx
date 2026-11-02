@@ -39,6 +39,7 @@ export function Status({ kind = "info", children }: { kind?: "info" | "error" | 
 }
 
 export function errorText(code: string): string {
+  if (code === "notices_failed") return t("notices_failed");
   return code === "network" ? t("error_generic") : `${t("error_generic")} (${code})`;
 }
 

@@ -23,9 +23,9 @@ export interface Deps {
 
 /** An error returned to the client as `{"error": code}` with an HTTP status. */
 export class HttpError extends Error {
-  readonly status: 400 | 401 | 403 | 404 | 409 | 429 | 503;
+  readonly status: 400 | 401 | 403 | 404 | 409 | 429 | 502 | 503;
   readonly code: string;
-  constructor(status: 400 | 401 | 403 | 404 | 409 | 429 | 503, code: string) {
+  constructor(status: 400 | 401 | 403 | 404 | 409 | 429 | 502 | 503, code: string) {
     super(code);
     this.status = status;
     this.code = code;
