@@ -5,6 +5,7 @@
   "explanation": "An extra token with a random signature and a matching cell entry; tallies, result and counters were adjusted to look consistent.",
   "input": {
     "opening": {
+      "candidates_hash": null,
       "closes_at": null,
       "draw_commitment": null,
       "draw_round": null,

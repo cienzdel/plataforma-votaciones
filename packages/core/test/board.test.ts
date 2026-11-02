@@ -176,6 +176,7 @@ const cases: [string, string, Mutation, BoardErrorCode][] = [
   ["opening of another voting", "secret", (f) => void (f.opening.voting_id = "00".repeat(16)), "opening_mismatch"],
   ["draw commitment", "limitedVote", (f) => void (f.opening.draw_commitment = "00".repeat(32)), "opening_mismatch"],
   ["closing time", "limitedVote", (f) => void (f.opening.closes_at = "2027-03-10T18:42:00Z"), "opening_mismatch"],
+  ["names", "limitedVote", (f) => void (f.opening.candidates_hash = "00".repeat(32)), "opening_mismatch"],
   ["draw round", "limitedVote", (f) => void (f.opening.draw_round = DRAND_ROUND + 1), "opening_mismatch"],
   ["live with closes_at", "secret", (f) => void (f.opening.closes_at = f.board.closed_at), "opening_mismatch"],
   ["live with draw round", "posts", (f) => void (f.opening.draw_round = DRAND_ROUND), "opening_mismatch"],
@@ -323,7 +324,7 @@ const cases: [string, string, Mutation, BoardErrorCode][] = [
     "limitedVote",
     (f) => {
       f.candidates.candidates.pop();
-      f.board.candidates_hash = hashJsonHex(f.candidates);
+      f.board.candidates_hash = f.opening.candidates_hash = hashJsonHex(f.candidates);
     },
     "candidates_mismatch",
   ],
@@ -332,7 +333,7 @@ const cases: [string, string, Mutation, BoardErrorCode][] = [
     "posts",
     (f) => {
       f.candidates.posts = [];
-      f.board.candidates_hash = hashJsonHex(f.candidates);
+      f.board.candidates_hash = f.opening.candidates_hash = hashJsonHex(f.candidates);
     },
     "candidates_mismatch",
   ],
@@ -341,7 +342,7 @@ const cases: [string, string, Mutation, BoardErrorCode][] = [
     "posts",
     (f) => {
       f.candidates = {};
-      f.board.candidates_hash = hashJsonHex(f.candidates);
+      f.board.candidates_hash = f.opening.candidates_hash = hashJsonHex(f.candidates);
     },
     "candidates_mismatch",
   ],

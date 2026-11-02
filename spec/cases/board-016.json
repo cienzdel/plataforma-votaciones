@@ -5,6 +5,7 @@
   "explanation": "An annulled voting may be published without its draw even though the opening notice committed to one.",
   "input": {
     "opening": {
+      "candidates_hash": "1b7ac2221162f52edfa679ebc9ff3f0400b3ef57ae358451a90c09d0827fa44c",
       "closes_at": "2026-10-13T09:00:00Z",
       "draw_commitment": "9a17b4e8b0e2ac3a1c8208333da0baba4e2c844122ed450c23a453bbea47f30d",
       "draw_round": 33026212,

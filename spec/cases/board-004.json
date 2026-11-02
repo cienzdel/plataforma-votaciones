@@ -5,6 +5,7 @@
   "explanation": "received (5) is greater than issued (4).",
   "input": {
     "opening": {
+      "candidates_hash": null,
       "closes_at": null,
       "draw_commitment": null,
       "draw_round": null,

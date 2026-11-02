@@ -5,6 +5,7 @@
   "explanation": "The first ballot was changed from \"for\" to \"against\" and every total was adjusted, so the universal checks pass. Only the voter's receipt reveals it.",
   "input": {
     "opening": {
+      "candidates_hash": null,
       "closes_at": null,
       "draw_commitment": null,
       "draw_round": null,

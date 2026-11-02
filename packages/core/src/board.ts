@@ -199,6 +199,7 @@ function checkOpening(b: Board, o: unknown): void {
     isObject(o) &&
     o.type === "opening" &&
     o.voting_id === b.voting_id &&
+    o.candidates_hash === b.candidates_hash &&
     jsonEqual(o.rules, b.rules) &&
     o.rules_hash === b.rules_hash &&
     jsonEqual(o.key, b.key) &&

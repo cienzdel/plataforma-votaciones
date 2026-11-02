@@ -197,6 +197,7 @@ export async function fixture(o: FixtureOptions = {}): Promise<Fixture> {
     voting_id: VOTING_ID,
   };
   const opening = {
+    candidates_hash: board.candidates_hash,
     closes_at: timing === "final_link" ? closedAt : null,
     draw_commitment: draw?.commitment ?? null,
     draw_round: timing === "final_link" && draw !== null ? DRAND_ROUND : null,

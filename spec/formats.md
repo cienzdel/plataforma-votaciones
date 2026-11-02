@@ -326,6 +326,7 @@ Published in the data repository when a voting opens, before any credential is i
 
 ```json
 {
+  "candidates_hash": null,
   "closes_at": null,
   "draw_commitment": null,
   "draw_round": null,
@@ -341,4 +342,4 @@ Published in the data repository when a voting opens, before any credential is i
 }
 ```
 
-`closes_at` is the fixed closing time of a `final_link` voting, or `null` for `live`. `draw_commitment` is the commitment of the tie-break draw ([`draws.md`](draws.md) §5) or `null`; `draw_round` is its drand round for `final_link` votings, or `null`. `key` is `null` unless `mode` is `secret`. The opening notice is not part of the hash chain; a verifier MUST check that `rules`, `rules_hash`, `key`, `quorum` and the draw commitment and round of the board equal those of the opening notice and, for `final_link`, that `closed_at` equals `closes_at`. An annulled board MAY have `draw: null` even if the opening notice has a draw commitment: the voting was annulled before the draw; the commitment and round are then not compared.
+`candidates_hash` is `hex(HJ(candidates table))` (§6), or `null` for `yes_no`: the names shown on the ballot are fixed in public before anyone votes. `closes_at` is the fixed closing time of a `final_link` voting, or `null` for `live`. `draw_commitment` is the commitment of the tie-break draw ([`draws.md`](draws.md) §5) or `null`; `draw_round` is its drand round for `final_link` votings, or `null`. `key` is `null` unless `mode` is `secret`. The opening notice is not part of the hash chain; a verifier MUST check that `candidates_hash`, `rules`, `rules_hash`, `key`, `quorum` and the draw commitment and round of the board equal those of the opening notice and, for `final_link`, that `closed_at` equals `closes_at`. An annulled board MAY have `draw: null` even if the opening notice has a draw commitment: the voting was annulled before the draw; the commitment and round are then not compared.

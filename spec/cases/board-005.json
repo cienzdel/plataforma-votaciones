@@ -5,6 +5,7 @@
   "explanation": "The published outcome does not follow from the tallies (2 for, 1 against under a simple majority).",
   "input": {
     "opening": {
+      "candidates_hash": null,
       "closes_at": null,
       "draw_commitment": null,
       "draw_round": null,

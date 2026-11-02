@@ -252,7 +252,7 @@ def verify_board(
         draw = b["draw"]
         o = opening if type(opening) is dict else {}
         ok = o.get("type") == "opening" and o.get("voting_id") == b["voting_id"]
-        ok = ok and all(same(o.get(k), b[k]) for k in ("rules", "rules_hash", "key", "quorum"))
+        ok = ok and "candidates_hash" in o and all(same(o.get(k), b[k]) for k in ("candidates_hash", "rules", "rules_hash", "key", "quorum"))
         # An annulled voting may be published without its draw (spec/formats.md §12).
         skip_draw = b["status"] == "annulled" and draw is None
         ok = ok and (skip_draw or o.get("draw_commitment", 0) == (draw["commitment"] if draw else None))

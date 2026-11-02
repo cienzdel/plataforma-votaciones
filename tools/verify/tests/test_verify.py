@@ -74,7 +74,7 @@ def board_fixture(timing: str) -> dict[str, Any]:
         "version": 1, "voting_id": VOTING_ID,
     }
     opening = {
-        "closes_at": closed_at if timing == "final_link" else None, "draw_commitment": draw["commitment"],
+        "candidates_hash": board["candidates_hash"], "closes_at": closed_at if timing == "final_link" else None, "draw_commitment": draw["commitment"],
         "draw_round": ROUND if timing == "final_link" else None, "key": None, "opened_at": board["opened_at"], "quorum": quorum,
         "rules": rules, "rules_hash": board["rules_hash"], "title": board["title"], "type": "opening", "version": 1, "voting_id": VOTING_ID,
     }
@@ -110,6 +110,8 @@ MUTATIONS: list[tuple[str, str, Callable[[dict[str, Any]], None], str]] = [
     ("tallies", "live", lambda f: f["board"]["tallies"]["c3"].update(marked=1, unmarked=5), "tallies_mismatch"),
     ("candidates", "live", lambda f: f["candidates"].update(title="x"), "candidates_mismatch"),
     ("closing time", "final_link", lambda f: f["opening"].update(closes_at="2027-01-01T00:00:00Z"), "opening_mismatch"),
+    ("names", "final_link", lambda f: f["opening"].update(candidates_hash="00" * 32), "opening_mismatch"),
+    ("names missing", "final_link", lambda f: f["opening"].pop("candidates_hash"), "opening_mismatch"),
     ("float", "live", lambda f: f["board"]["counters"].update(members=1.5), "format_invalid"),
 ]
 

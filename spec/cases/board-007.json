@@ -5,6 +5,7 @@
   "explanation": "The board rules differ from those in the opening notice.",
   "input": {
     "opening": {
+      "candidates_hash": null,
       "closes_at": null,
       "draw_commitment": null,
       "draw_round": null,

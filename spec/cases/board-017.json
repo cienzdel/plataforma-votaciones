@@ -5,6 +5,7 @@
   "explanation": "In modes without cells, every cell must add up to the number of ballots received.",
   "input": {
     "opening": {
+      "candidates_hash": null,
       "closes_at": null,
       "draw_commitment": null,
       "draw_round": null,

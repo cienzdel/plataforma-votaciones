@@ -181,6 +181,8 @@ async function open(deps: Deps, v: Voting, forceReason: string | null, waitForPa
   // final_link fixes the drand round now, from the fixed closing time (spec/draws.md §5).
   const drawRound = v.drawCommitment !== null && v.closesAt !== null ? roundAt(seconds(v.closesAt)) : null;
   const opening = {
+    // Binds the names shown on the ballot before anyone votes (the table itself is published at closing).
+    candidates_hash: v.candidates === null ? null : hashJsonHex(v.candidates),
     closes_at: v.closesAt === null ? null : formatTimestamp(v.closesAt),
     draw_commitment: v.drawCommitment,
     draw_round: drawRound,

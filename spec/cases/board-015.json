@@ -5,6 +5,7 @@
   "explanation": "Named electronic vote: no key, participation or cells; the roll-call list is published next to the board and only its hash is here.",
   "input": {
     "opening": {
+      "candidates_hash": null,
       "closes_at": null,
       "draw_commitment": null,
       "draw_round": null,

@@ -5,6 +5,7 @@
   "explanation": "Five ballots with real RFC 9474 blind signatures (RSA-3072). 6 credentials were issued and 5 used. The receipt of the first ballot must verify.",
   "input": {
     "opening": {
+      "candidates_hash": null,
       "closes_at": null,
       "draw_commitment": null,
       "draw_round": null,
