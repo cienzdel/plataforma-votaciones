@@ -36,6 +36,10 @@ export function drawRoutes(deps: Deps): Hono<AuthEnv> {
       id: newId(), votingId: v.id, commitment, after: formatTimestamp(after * 1000), round: roundAt(after + LIVE_DRAW_DELAY_S),
       items: result.tied!, spots: result.spots!, document: null, publishedAt: null,
     };
+    // Published before anyone can know round R, so that the choice of round and seed is on record.
+    const notice = { after: row.after, commitment, items: row.items, round: row.round, spots: row.spots, type: "draw_commitment", version: 1, voting_id: v.id };
+    await deps.publisher.publish([jsonFile(`${datePath(after * 1000)}/${v.id}.tie.commitment.json`, notice)], `Tie draw commitment for voting ${v.id}`);
+    if (deps.db.select().from(tieDraw).where(eq(tieDraw.votingId, v.id)).get()) throw new HttpError(409, "draw_exists");
     deps.db.insert(tieDraw).values(row).run();
     return c.json(row, 201);
   });

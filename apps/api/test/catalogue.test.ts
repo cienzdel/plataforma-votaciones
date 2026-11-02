@@ -189,6 +189,15 @@ describe("tie-break draws", () => {
     expect(await t.verifyPublished(v.id)).toEqual({ valid: true, result: null });
     expect((await t.call("POST", `/votings/${v.id}/reveal`, { seed: SEED }, t.official)).body).toEqual({ error: "not_awaiting_draw" });
   });
+
+  it("cannot be annulled once the round exists, when the seed holder could know the order", async () => {
+    const t = await session();
+    const v = await t.create(LIMITED);
+    await t.call("POST", `/votings/${v.id}/close`, undefined, t.official);
+    t.clock.t += 60_000; // past round R = round_at(closed_at + 30 s)
+    expect((await t.call("POST", `/votings/${v.id}/annul`, { reason: "Dislike the order" }, t.official)).body).toEqual({ error: "draw_round_reached" });
+    expect((await t.call("GET", `/votings/${v.id}`, undefined, t.official)).body.status).toBe("awaiting_draw");
+  });
 });
 
 describe("manual and paper counts", () => {
@@ -229,6 +238,9 @@ describe("in-room ties and the election assistant", () => {
     expect((await t.call("POST", "/draws", { voting_id: v.id, commitment: "zz" }, t.official)).body).toEqual({ error: "invalid_commitment" });
     const d = (await t.call("POST", "/draws", { voting_id: v.id, commitment: COMMITMENT }, t.official)).body;
     expect(d.round).toBe(DRAND_ROUND);
+    // The commitment and the round are public before the round exists.
+    const notice = JSON.parse([...t.publisher.files].find(([p]) => p.endsWith(".tie.commitment.json"))![1]);
+    expect(notice).toEqual({ after: d.after, commitment: COMMITMENT, items: d.items, round: DRAND_ROUND, spots: 1, type: "draw_commitment", version: 1, voting_id: v.id });
     expect((await t.call("POST", "/draws", { voting_id: v.id, commitment: COMMITMENT }, t.official)).body).toEqual({ error: "draw_exists" });
     const revealed = (await t.call("POST", `/draws/${d.id}/reveal`, { seed: SEED }, t.official)).body;
     expect(revealed.document).toMatchObject({ purpose: "tie", spots: 1, round_rule: { after: formatTimestamp(ROUND_MS - 30_000), delay_seconds: 30 } });
@@ -350,6 +362,7 @@ describe("independent verification of the whole catalogue", () => {
       const out = execFileSync(python, ["-m", "pv_verify", dir, "--profile", profile], { cwd: join(import.meta.dirname, "../../../tools/verify"), encoding: "utf8" });
       expect(out).toContain("RESULT: all checks passed");
       expect(out.match(/^ok /gm)).toHaveLength(5);
+      expect(out).not.toMatch(/commitment_not_published|profile_not_checked/);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

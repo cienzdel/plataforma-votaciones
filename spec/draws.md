@@ -102,4 +102,6 @@ The verifier MUST check `R = round_at(closes_at)` against the opening notice (`f
 - **Items:** the `tied` ids. **Winners:** the first `spots` ids of `order`.
 - **Document:** a stand-alone draw document, appended to the hash chain ([`formats.md`](formats.md) §9). Same members as §5, with `purpose: "tie"`, `voting_id` of the voting that ended in the tie, `round_rule: {"after": "<RFC 3339 time of the commitment>", "delay_seconds": 30}`, `spots` and `winners`.
 
-The verifier MUST check `R = round_at(after + delay_seconds)`. Because the commitment and `R` are shown in the room before `R` exists, the choice of round cannot be manipulated.
+The commitment is published, before `R` exists, as `<date>/<voting_id>.tie.commitment.json`: `{"after", "commitment", "items", "round", "spots", "type": "draw_commitment", "version": 1, "voting_id"}`. The verifier MUST check `R = round_at(after + delay_seconds)` and, when the commitment file is there, that it equals the draw's; otherwise it says so. Because the commitment and `R` are shown in the room and published before `R` exists, the choice of round cannot be manipulated.
+
+Whoever holds the seed learns the order as soon as round `R` exists. A voting waiting for its draw therefore cannot be annulled once `R` exists. Not revealing the seed stays possible, but it is visible: the commitment is public and the voting, or the tie, stays unresolved.

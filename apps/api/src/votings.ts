@@ -4,39 +4,7 @@
  * (`manual`, `paper`), closing, the tie-break draw, the board, the chain and publication. Vote
  * reception for `secret` votings is in reception.ts, on its own origin.
  */
-import {
-  canonicalize,
-  cellIdHex,
-  cellSpec,
-  computeQuorum,
-  computeResult,
-  drandRandomness,
-  drawCommitment,
-  drawSigma,
-  formatTimestamp,
-  fromHex,
-  hashJsonHex,
-  isFraction,
-  isHex,
-  isId,
-  isTimestamp,
-  keyFingerprint,
-  limitedVoteConsistent,
-  METHODS,
-  needsTiebreakOrder,
-  parseTimestamp,
-  QUICKNET,
-  roundAt,
-  shuffle,
-  tallyCells,
-  toHex,
-  validAnswers,
-  validateParams,
-  type Fraction,
-  type Method,
-  type Mode,
-  type Tallies,
-} from "@pv/core";
+import { canonicalize, cellIdHex, cellSpec, computeQuorum, computeResult, drandRandomness, drawCommitment, drawSigma, formatTimestamp, type Fraction, fromHex, hashJsonHex, isFraction, isHex, isId, isTimestamp, keyFingerprint, limitedVoteConsistent, type Method, METHODS, type Mode, needsTiebreakOrder, parseTimestamp, QUICKNET, roundAt, roundTime, shuffle, type Tallies, tallyCells, toHex, validAnswers, validateParams } from "@pv/core";
 import { createHash, randomBytes } from "node:crypto";
 import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
@@ -615,6 +583,9 @@ export function votingRoutes(deps: Deps): Hono<AuthEnv> {
     const { reason } = await c.req.json<{ reason?: unknown }>();
     if (typeof reason !== "string" || reason.trim() === "") throw new HttpError(400, "reason_required");
     const v = getVoting(deps, c.req.param("id"));
+    // Once the round of its draw exists, whoever holds the seed can know the order: annulling then
+    // would let them discard an outcome they dislike, so only the reveal is left (spec/draws.md §5).
+    if (v.status === "awaiting_draw" && roundTime(v.drawRound!) * 1000 <= deps.now()) throw new HttpError(409, "draw_round_reached");
     if (v.status === "created") {
       deps.db.update(voting).set({ status: "annulled", annulReason: reason.trim() }).where(eq(voting.id, v.id)).run();
     } else {

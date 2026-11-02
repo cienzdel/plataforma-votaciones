@@ -80,7 +80,7 @@ def verify_repository(root: Path, profiles: list[Any] = (), receipts: list[Any] 
                 else:
                     boards[voting_id] = (doc, entry)
         elif kind == "draw":
-            entry["error"] = verify_tie_draw(doc) or _tie_binding(doc, boards, draws)
+            entry["error"] = verify_tie_draw(doc) or _tie_binding(doc, boards, draws) or _tie_commitment(root, relative, doc, entry)
         elif kind == "assent":
             profile = by_hash.get(doc.get("profile", {}).get("hash")) if type(doc.get("profile")) is dict else None
             entry["error"] = verify_assent(doc, profile)
@@ -105,6 +105,18 @@ def _tie_binding(d: dict[str, Any], boards: dict[str, tuple[dict[str, Any], dict
     if type(voting_id) is str:
         draws.add(voting_id)
     return None if ok else "draw_unbound"
+
+
+def _tie_commitment(root: Path, relative: str, d: dict[str, Any], entry: dict[str, Any]) -> str | None:
+    """The commitment and round published before the round existed, if found, are the draw's (spec/draws.md §6)."""
+    if not relative.endswith(".tie.draw.json"):
+        return None
+    notice = _try_load(root, relative[: -len(".draw.json")] + ".commitment.json")
+    if notice is None:
+        entry["notes"].append("commitment_not_published")
+        return None
+    expected = {"after": d["round_rule"]["after"], "commitment": d["commitment"], "items": d["items"], "round": d["drand"]["round"], "spots": d["spots"], "type": "draw_commitment", "version": 1, "voting_id": d["voting_id"]}
+    return None if notice == expected else "draw_unbound"
 
 
 def _profile_error(rules: dict[str, Any], profile: dict[str, Any]) -> bool:
