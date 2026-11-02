@@ -57,6 +57,7 @@
   - **Real-time correlation:** an operator who modifies the server or captures traffic on the VM can match the time or IP of issuance with that of reception. The code running on the VM **cannot be attested**.
   - **Key tagging in live votes:** unless the officials wait for the fingerprint to be published on Pages, a malicious VM can give each person a different key and recognise their votes.
   - **Unreported ghost credentials:** signing extra credentials in the name of present members who do not vote is detected only if those members read the notice and react; a malicious VM may also skip sending the notices.
+  - **Off-book ballots in the unused credentials:** browsers obtain every credential as soon as a secret voting is shown, so `issued` counts present members who are logged in, not voters. Whoever holds the voting key can sign tokens with no issuance record and cast up to `issued − received` ballots of their choice: the counters, every personal notice and every receipt stay correct. Closing this gap needs a design change: publishing the unused credentials before closing, or obtaining credentials only when the person decides to vote [open decision].
   - **Key destruction:** not verifiable.
   - **Full ballots before closing:** known to the server (without identity).
   - **Fake attendance or proxies:** detectable only through proxy e-mails, the nominal minutes and observation of the room, not through cryptography.
