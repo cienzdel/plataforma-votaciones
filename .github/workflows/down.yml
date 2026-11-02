@@ -61,8 +61,10 @@ jobs:
           scp -i key "$user@$ip:/tmp/$name" "$name"
           # The stack stops and its containers, whose configuration holds the environment, are
           # removed; then the secrets file goes too, so the stopped disk or the snapshot does not
-          # keep the master key next to the database. The next Up writes a fresh one.
-          $ssh "rm -f /tmp/$name /tmp/recipients && cd /opt/pv/src && $sudo docker compose -f infra/compose.yaml down && $sudo shred -u infra/.env"
+          # keep the master key next to the database. The next Up writes a fresh one. fstrim then
+          # discards the free blocks, where deleted files such as SQLite's rollback journals (with
+          # earlier copies of erased ballots) could otherwise remain in the disk or the snapshot.
+          $ssh "rm -f /tmp/$name /tmp/recipients && cd /opt/pv/src && $sudo docker compose -f infra/compose.yaml down && $sudo shred -u infra/.env && sync && { $sudo fstrim -av || true; }"
           echo "BACKUP=$name" >> "$GITHUB_ENV"
       - name: Store the backup in the private backup repository
         env:

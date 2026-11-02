@@ -79,6 +79,7 @@
   - **Personal data** of the electorate (names, e-mails, degrees, attendance, proxies, objections) from a decrypted copy or a running VM.
   - **Votes open at that moment:** the encrypted private key plus the master key in the VM environment would allow signing.
   - **Order residues** in SQLite files [to be verified]; mitigated with `secure_delete` and `VACUUM`.
+  - **Residues on the disk:** SQLite's rollback journal holds earlier copies of the pages it changes, ballots included, and is deleted, not overwritten. `secure_delete` covers only the database file. Down runs `fstrim` before the VM is stopped or snapshotted, so that free blocks are discarded; whether the provider's volume then reads them as zeros is [to be verified].
 
 ### A3. Another voter (including a proxy holder)
 
