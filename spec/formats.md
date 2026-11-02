@@ -277,7 +277,7 @@ record_hash = HJ(record)
   - `<name>.candidates.json`: its candidates table (§6), when `candidates_hash` is not `null`;
   - `<name>.roll_call.json`: its roll-call list (§7), when `roll_call_hash` is not `null`.
 - Stand-alone draws and assent records are chained documents of their own and need no companion file.
-- Candidates tables and roll-call lists MAY be deleted when their retention period ends; their hashes stay in the boards.
+- Candidates tables and roll-call lists MAY be deleted when their retention period ends; their hashes stay in the boards. Deleting a file in a new commit leaves it in the repository's history and in every earlier clone: removing the names also needs a rewrite of the history of the data repository, which the chain survives (record hashes do not depend on commit ids) but which cannot reach copies made before.
 
 ## 10. Receipt
 
