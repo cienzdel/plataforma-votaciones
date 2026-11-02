@@ -17,6 +17,7 @@ import { serve } from "@hono/node-server";
 import { createApp } from "./app.ts";
 import { ensureFirstOfficial } from "./census.ts";
 import { openDb } from "./db/index.ts";
+import { authSession } from "./db/schema.ts";
 import { masterKey } from "./keys.ts";
 import { DirectoryMailer, gmailMailer, MemoryMailer, smtpMailer, type Mailer } from "./mail/index.ts";
 import { parseProfile } from "./profile.ts";
@@ -73,6 +74,13 @@ const deps = {
 ensureFirstOfficial(deps, { email: env("PV_FIRST_OFFICIAL_EMAIL"), name: env("PV_FIRST_OFFICIAL_NAME") });
 serve({ fetch: createApp(deps).fetch, port: Number(process.env.PV_PORT ?? 8080) });
 serve({ fetch: receptionApp(deps).fetch, port: Number(process.env.PV_RECEPTION_PORT ?? 8081) });
+
+// Down stops the stack with SIGTERM: every session ends with it, so that a token kept in an old tab
+// or sent to the released address is worth nothing on the next Up. A crash restart keeps them.
+process.on("SIGTERM", () => {
+  deps.db.delete(authSession).run();
+  process.exit(0);
+});
 
 // Final-link votings and assents close on their own at the fixed time.
 let closing = false;

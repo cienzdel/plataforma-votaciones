@@ -57,13 +57,34 @@ export class ApiError extends Error {
   }
 }
 
+let configCheckedAt = Date.now();
+
+/**
+ * The API's address comes from the VM's IP, which is released at Down and may go to someone else.
+ * Every minute, and after a network failure, config.json is read again: if the address changed or
+ * the platform is off, the page reloads instead of sending the session token to the old address.
+ */
+async function stillCurrent(force: boolean): Promise<void> {
+  if (!force && Date.now() - configCheckedAt < 60_000) return;
+  configCheckedAt = Date.now();
+  const fresh = (await (await fetch("./config.json", { cache: "no-store" })).json().catch(() => null)) as Config | null;
+  if (fresh !== null && (fresh.api !== config!.api || fresh.reception !== config!.reception)) {
+    location.reload();
+    throw new ApiError(0, "network");
+  }
+}
+
 /** Calls the session API with the bearer token. Never sends cookies. */
 export async function api<T = unknown>(method: string, path: string, body?: unknown): Promise<T> {
+  await stillCurrent(false);
   const s = getSession();
   const headers: Record<string, string> = {};
   if (body !== undefined) headers["content-type"] = "application/json";
   if (s !== null) headers.authorization = "Bearer " + s.token;
-  const res = await fetch(cfg().api! + path, { method, headers, credentials: "omit", body: body === undefined ? null : JSON.stringify(body) });
+  const res = await fetch(cfg().api! + path, { method, headers, credentials: "omit", body: body === undefined ? null : JSON.stringify(body) }).catch(async (e: unknown) => {
+    await stillCurrent(true).catch(() => undefined);
+    throw e;
+  });
   const data = res.status === 204 ? null : await res.json();
   if (res.status === 401 && s !== null) setSession(null);
   if (!res.ok) throw new ApiError(res.status, (data as { error?: string })?.error ?? "error");
