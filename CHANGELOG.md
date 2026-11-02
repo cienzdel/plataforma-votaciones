@@ -38,6 +38,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 - Fictitious example profile `profiles/example.json` for development and tests.
 - Layout of the data repository (`spec/formats.md` §9.1) and error codes for stand-alone draws and assent records.
 
+### Security
+- Fixes from the first security audit (41 leads, each checked with a regression test where it could run locally):
+  - reception refuses a repeated ballot secret and a cast that finishes after closing; named votes read their body before the voting;
+  - login codes are bound to the browser that asked for them, assisted codes have 12 digits and their own slot, the code e-mail is sent after a uniform answer, with an hourly cap;
+  - the browser keeps credentials and receipts per member, checks the key and the ballot's names against the opening notice on Pages (which now carries `candidates_hash`), and checks receipts against the board published on Pages;
+  - ballots are erased before the result notices, every credential holder gets their count, and the candidates table and roll-call list carry a random salt;
+  - voting transitions are compare-and-set; the opening notice is published before a voting opens; assent records and tie draws are published again after a failure; a published chain cannot be rewound; a voting waiting for its draw cannot be annulled once its round exists; tie commitments are published before the round;
+  - both verifiers recount roll calls (cases `board-018` to `board-020`); the repository verifier checks rules against the profile (now published under `profiles/`), binds tie draws to their boards, gives every receipt a verdict, contains record paths and escapes its output;
+  - Down destroys the secrets file, trims free disk blocks and refuses to switch off with open items; the VM's SSH host key is pinned (new secret `PV_SSH_HOST_KEY`) and only the current deploy key is authorized; SMTP requires STARTTLS; sessions end at Down; the client refuses a data repository on its own origin and reloads when the API address changes;
+  - CI: a manual Pages run publishes only the "off" client, `pnpm/action-setup` is pinned by commit, and the OCI CLI is installed hash-locked before any secret is in the job.
+- Open decisions now stated in the documents: end of personal-data retention, names in the data repository's git history, off-book ballots within unused credentials, and the electorate of `final_link` votings.
+
 ### Changed
 - The server's blind signature uses OpenSSL (`node:crypto`) instead of the JavaScript big-integer code in blindrsa-ts, which took ~0.9 s per signature (ADR-0002).
 - The roll-call list records `right` and the full `answers` of each ballot (`spec/formats.md` §7). An annulled board may omit its draw even if the opening notice committed to one (`spec/formats.md` §12).
