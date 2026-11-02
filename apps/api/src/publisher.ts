@@ -2,7 +2,7 @@
  * Publication to the public data repository (spec/formats.md §9.1, ADR-0017). One call is one
  * commit. The GitHub implementation uses a fine-grained token limited to that repository.
  */
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 export interface File {
@@ -16,6 +16,21 @@ export interface Publisher {
   isServed(file: File): Promise<boolean>;
 }
 
+/**
+ * Refuses a chain file that does not extend the published one record by record. A database older
+ * than the public archive (a restored backup, say) would otherwise rewind chain.json and drop
+ * records that anyone may already have checked.
+ */
+export function assertChainExtends(published: string | null, files: File[]): void {
+  const next = files.find((f) => f.path === "chain.json");
+  if (next === undefined || published === null) return;
+  type Rec = { record_hash: string; path: string };
+  const before = (JSON.parse(published) as { records: Rec[] }).records;
+  const after = (JSON.parse(next.content) as { records: Rec[] }).records;
+  const extends_ = before.length <= after.length && before.every((r, i) => r.record_hash === after[i]!.record_hash && r.path === after[i]!.path);
+  if (!extends_) throw new Error("chain_rewound: the published chain.json is not a prefix of this database's chain");
+}
+
 /** Documents are published readable; only their values are hashed (spec/formats.md §1.3). */
 export function jsonFile(path: string, value: unknown): File {
   return { path, content: JSON.stringify(value, null, 2) + "\n" };
@@ -25,6 +40,7 @@ export class MemoryPublisher implements Publisher {
   readonly files = new Map<string, string>();
   readonly commits: string[] = [];
   async publish(files: File[], message: string): Promise<void> {
+    assertChainExtends(this.files.get("chain.json") ?? null, files);
     for (const f of files) this.files.set(f.path, f.content);
     this.commits.push(message);
   }
@@ -40,6 +56,7 @@ export class DirectoryPublisher implements Publisher {
     this.root = root;
   }
   async publish(files: File[]): Promise<void> {
+    assertChainExtends(await readFile(join(this.root, "chain.json"), "utf8").catch(() => null), files);
     for (const f of files) {
       const target = join(this.root, ...f.path.split("/"));
       await mkdir(dirname(target), { recursive: true });
@@ -83,6 +100,13 @@ export class GitHubPublisher implements Publisher {
     const ref = `/git/ref/heads/${this.config.branch}`;
     const head = await this.api<{ object: { sha: string } }>("GET", ref);
     const parent = await this.api<{ tree: { sha: string } }>("GET", `/git/commits/${head.object.sha}`);
+    if (files.some((f) => f.path === "chain.json")) {
+      const res = await this.fetch(`https://api.github.com/repos/${this.config.repository}/contents/chain.json?ref=${head.object.sha}`, {
+        headers: { authorization: "Bearer " + this.config.token, accept: "application/vnd.github.raw+json" },
+      });
+      if (!res.ok && res.status !== 404) throw new Error(`GitHub API GET chain.json failed: ${res.status}`);
+      assertChainExtends(res.ok ? await res.text() : null, files);
+    }
     const tree = await this.api<{ sha: string }>("POST", "/git/trees", {
       base_tree: parent.tree.sha,
       tree: files.map((f) => ({ path: f.path, mode: "100644", type: "blob", content: f.content })),

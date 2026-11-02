@@ -222,6 +222,21 @@ describe("secret voting, live", () => {
     expect([...t.publisher.files.keys()].some((p) => p.endsWith(`${v.body.id}.opening.json`))).toBe(true);
   });
 
+  it("refuses to publish from a database whose chain is behind the published one", async () => {
+    const ahead = await session();
+    for (let i = 0; i < 2; i++) {
+      const v = await ahead.createAndOpen();
+      await ahead.call("POST", `/votings/${v.id}/close`, undefined, ahead.official);
+    }
+    // A restored, older database publishing to the same repository.
+    const behind = await session();
+    behind.deps.publisher = ahead.publisher;
+    const v = await behind.createAndOpen();
+    const res = await behind.call("POST", `/votings/${v.id}/close`, undefined, behind.official);
+    expect(res.status).toBe(500);
+    expect(JSON.parse(ahead.publisher.files.get("chain.json")!).records).toHaveLength(2);
+  });
+
   it("requires a reason to open without quorum, and publishes it", async () => {
     const t = await session();
     const body = { ...YES_NO, min_attendance: [1, 2] };

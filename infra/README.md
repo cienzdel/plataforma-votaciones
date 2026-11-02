@@ -71,6 +71,8 @@ age --decrypt --identity key.txt --output pv.db pv-<date>.db.age
 docker compose -f infra/compose.yaml cp pv.db api:/data/pv.db
 ```
 
+A backup older than the public archive cannot publish: every publication checks that the published `chain.json` is a prefix of the database's chain, and fails with `chain_rewound` otherwise. Restore the newest backup; if the archive holds records the backup lacks, they cannot be recreated and the publication stays blocked until the officials decide what to do.
+
 ## Probado · Tested
 
 - **ES** · En local con Docker, sin ninguna cuenta externa:
