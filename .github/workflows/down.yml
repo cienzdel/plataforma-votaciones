@@ -4,6 +4,11 @@
 name: Down
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: "Switch off even with open votings or assents (their deadlines will pass while it is off)"
+        type: boolean
+        default: false
 concurrency: machine
 permissions:
   contents: read
@@ -59,6 +64,7 @@ jobs:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
           OCI_COMPARTMENT_OCID: ${{ vars.OCI_COMPARTMENT_OCID || secrets.OCI_TENANCY_OCID }}
           RECIPIENTS: ${{ vars.AGE_RECIPIENTS }}
+          FORCE: ${{ inputs.force }}
         run: |
           ip=$(sh "infra/scripts/$PROVIDER.sh" ip)
           if [ -z "$ip" ] || [ "$ip" = null ]; then echo "::error::the VM has no IP address (is it running?)"; exit 1; fi
@@ -68,6 +74,10 @@ jobs:
           printf '%s %s\n' "$ip" "$(cat hostkey.pub)" > known_hosts
           opts="-i key -o StrictHostKeyChecking=yes -o UserKnownHostsFile=known_hosts"
           ssh="ssh $opts $user@$ip"
+          if ! $ssh "cd /opt/pv/src && $sudo sh infra/scripts/open-items.sh"; then
+            if [ "$FORCE" != true ]; then echo "::error::something is still open; close it first, or run Down with force"; exit 1; fi
+            echo "::warning::switching off with open items, as asked"
+          fi
           name="pv-$(date -u +%Y%m%dT%H%M%SZ).db.age"
           printf '%s\n' "$RECIPIENTS" | $ssh "cat > /tmp/recipients"
           $ssh "cd /opt/pv/src && $sudo sh infra/scripts/backup.sh /tmp/recipients /tmp/$name && $sudo chown $user /tmp/$name"
