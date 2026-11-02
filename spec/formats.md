@@ -211,17 +211,18 @@ Published next to the board, and the only place with names.
 {
   "candidates": [ { "id": "c1", "name": "Ana Ejemplo" } ],
   "posts": [ { "id": "comms", "name": "Communication" } ],
+  "salt": "…",
   "type": "candidates",
   "version": 1,
   "voting_id": "…"
 }
 ```
 
-`posts` is `[]` except for the `posts` method. A slate's `name` lists its members and the position each one would take. When the retention period ends, the table can be deleted; its hash stays in the board.
+`posts` is `[]` except for the `posts` method. A slate's `name` lists its members and the position each one would take. `salt` is 32 random bytes in hex, so that the hash that stays in the board cannot confirm a guess of the names once the table is deleted. When the retention period ends, the table can be deleted; its hash stays in the board.
 
 ## 7. Roll-call list
 
-For `roll_call` votings: `{"type": "roll_call", "version": 1, "voting_id": "…", "votes": [{"answers": {"<cell key>": "<value>"}, "member": "<name>", "right": 0}]}`, sorted by `member` and then `right`. `right` is 0 for the member's own vote and 1, 2… for the proxy votes they hold; `answers` is a complete ballot (§3). Published next to the board, with the same retention as the candidates table.
+For `roll_call` votings: `{"salt": "…", "type": "roll_call", "version": 1, "voting_id": "…", "votes": [{"answers": {"<cell key>": "<value>"}, "member": "<name>", "right": 0}]}`, with `salt` as in §6 and `votes` sorted by `member` and then `right`. `right` is 0 for the member's own vote and 1, 2… for the proxy votes they hold; `answers` is a complete ballot (§3). Published next to the board, with the same retention as the candidates table.
 
 ## 8. Assent record
 

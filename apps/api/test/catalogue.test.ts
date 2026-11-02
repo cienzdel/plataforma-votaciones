@@ -133,6 +133,15 @@ describe("tie-break draws", () => {
     ]);
     expect(done.board.roll_call_hash).toBe(hashJsonHex(rollCall));
     expect(await t.verifyPublished(v.id)).toMatchObject({ valid: true });
+
+    // Both name documents carry a random salt, so a guess of the names alone cannot be confirmed
+    // against the hashes that stay in the board once the documents are deleted.
+    const table = JSON.parse([...t.publisher.files].find(([p]) => p.endsWith(".candidates.json"))![1]);
+    for (const [doc, hash] of [[table, done.board.candidates_hash], [rollCall, done.board.roll_call_hash]]) {
+      expect(doc.salt).toMatch(/^[0-9a-f]{64}$/);
+      const { salt: _, ...guess } = doc;
+      expect(hashJsonHex(guess)).not.toBe(hash);
+    }
   });
 
   it("refuses a named vote whose body arrives after the voting closed", async () => {

@@ -134,6 +134,8 @@ function create(deps: Deps, b: Record<string, unknown>): Voting {
       : {
           candidates: names(b.candidates, ids),
           posts: method === "posts" ? names(b.posts, params.posts as string[]) : [],
+          // Deleted with the table: without it, the hash left in the board would confirm a guess of the names.
+          salt: randomBytes(32).toString("hex"),
           type: "candidates",
           version: 1,
           voting_id: id,
@@ -286,7 +288,7 @@ function countAnswers(spec: Map<string, readonly string[]>, answers: Record<stri
 function rollCallList(deps: Deps, v: Voting): Record<string, unknown> {
   const rows = deps.db.select({ name: member.name, right: nominalVote.right, answers: nominalVote.answers }).from(nominalVote).innerJoin(member, eq(member.id, nominalVote.memberId)).where(eq(nominalVote.votingId, v.id)).all();
   const votes = rows.map((r) => ({ answers: r.answers, member: r.name, right: r.right })).sort((a, b) => (a.member === b.member ? a.right - b.right : a.member < b.member ? -1 : 1));
-  return { type: "roll_call", version: 1, voting_id: v.id, votes };
+  return { salt: randomBytes(32).toString("hex"), type: "roll_call", version: 1, voting_id: v.id, votes };
 }
 
 /** Builds the board (spec/formats.md §5) for any mode. */
