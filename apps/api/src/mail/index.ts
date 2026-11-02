@@ -48,7 +48,10 @@ export interface SmtpConfig {
 }
 
 export function smtpMailer(c: SmtpConfig): Mailer {
-  const transport = nodemailer.createTransport({ host: c.host, port: c.port, secure: c.port === 465, auth: { user: c.user, pass: c.password } });
+  // Port 465 is TLS from the start; on any other port STARTTLS is required, so that an on-path
+  // party who strips it from the server's reply gets an error, not the password and the codes.
+  const secure = c.port === 465;
+  const transport = nodemailer.createTransport({ host: c.host, port: c.port, secure, requireTLS: !secure, auth: { user: c.user, pass: c.password } });
   return {
     async send(m) {
       await transport.sendMail({ from: c.from, ...m });

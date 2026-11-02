@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { gmailMailer } from "../src/mail/index.ts";
+import { gmailMailer, smtpMailer } from "../src/mail/index.ts";
 import { parseProfile } from "../src/profile.ts";
 import { PROFILE } from "./helpers.ts";
 
@@ -50,5 +50,32 @@ describe("directory mailer", () => {
     const files = readdirSync(dir);
     expect(JSON.parse(readFileSync(join(dir, files[0]!), "utf8"))).toEqual({ to: "p1@example.org", subject: "s", text: "t" });
     rmSync(dir, { recursive: true });
+  });
+});
+
+describe("SMTP transport security", () => {
+  it("refuses to authenticate when the server does not offer STARTTLS", async () => {
+    const { createServer } = await import("node:net");
+    const lines: string[] = [];
+    const server = createServer((socket) => {
+      socket.write("220 fake ESMTP\r\n");
+      socket.on("data", (d) => {
+        for (const line of d.toString().split("\r\n").filter(Boolean)) {
+          lines.push(line);
+          if (/^EHLO/i.test(line)) socket.write("250-fake\r\n250 AUTH PLAIN\r\n");
+          else if (/^QUIT/i.test(line)) socket.end("221 bye\r\n");
+          else socket.write("250 ok\r\n");
+        }
+      });
+    });
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+    const port = (server.address() as { port: number }).port;
+    try {
+      const mailer = smtpMailer({ host: "127.0.0.1", port, user: "u", password: "secret-password", from: "a@example.org" });
+      await expect(mailer.send({ to: "b@example.org", subject: "Code", text: "12345678" })).rejects.toThrow();
+      expect(lines.join("\n")).not.toMatch(/AUTH|12345678/);
+    } finally {
+      server.close();
+    }
   });
 });
