@@ -149,6 +149,33 @@ describe("secret voting, live", () => {
     expect(await verifyBoard({ opening, board, chain })).toEqual({ valid: true, result: board.result });
   });
 
+  it("refuses a cast whose signature check was still running when the voting closed", async () => {
+    const t = await session();
+    const v = await t.createAndOpen();
+    const cred = await t.credential(v.id, t.tokens.p2);
+    let release!: () => void;
+    let started!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const inVerify = new Promise<void>((r) => (started = r));
+    const verify = crypto.subtle.verify.bind(crypto.subtle);
+    const spy = vi.spyOn(crypto.subtle, "verify").mockImplementation(async (...args) => {
+      started();
+      await gate;
+      return verify(...args);
+    });
+    const pending = cast(t.reception, v.id, cred, { q: "for" });
+    await inVerify;
+    const closed = await t.call("POST", `/votings/${v.id}/close`, undefined, t.official);
+    expect(closed.body.status).toBe("closed");
+    release();
+    const late = await pending;
+    spy.mockRestore();
+    expect(late.status).toBe(409);
+    expect(late.body).toEqual({ error: "voting_not_open" });
+    expect(t.deps.db.select().from(spentToken).all()).toEqual([]);
+    expect(t.deps.db.select().from(ballotReceived).all()).toEqual([]);
+  });
+
   it("requires a reason to open without quorum, and publishes it", async () => {
     const t = await session();
     const body = { ...YES_NO, min_attendance: [1, 2] };

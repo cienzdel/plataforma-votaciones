@@ -52,6 +52,9 @@ export function receptionApp(deps: Deps): Hono {
     const vote = voteObject(b);
     const ack = voteAck(vote);
 
+    // The voting may have closed while the signature was being checked: from here to the insert
+    // nothing awaits, so this re-read and the insert see the same state (spec/protocol.md §7 step 1).
+    if (deps.db.select({ status: voting.status }).from(voting).where(eq(voting.id, v.id)).get()?.status !== "open") throw new HttpError(409, "voting_not_open");
     // 6. Spent token: idempotent for the identical vote, rejected otherwise.
     const stored = deps.db.select().from(ballotReceived).where(eq(ballotReceived.token, vote.token)).get();
     if (stored !== undefined) {
